@@ -28,7 +28,7 @@ class GoogleController extends Controller
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function redirect()
+    public function redirectToGoogle()
     {
         // ================================================
         // MEMBANGUN URL REDIRECT KE GOOGLE
@@ -39,7 +39,7 @@ class GoogleController extends Controller
         // ================================================
 
         return Socialite::driver('google')
-            // ->stateless() // Opsional: Gunakan jika error "InvalidStateException" terus muncul (bypass session state check)
+            ->stateless() // Opsional: Gunakan jika error "InvalidStateException" terus muncul (bypass session state check)
             ->scopes(['email', 'profile', 'openid'])
             ->with([
             'prompt' => 'select_account'
@@ -68,7 +68,7 @@ class GoogleController extends Controller
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function callback()
+    public function handleGoogleCallback()
     {
         // ================================================
         // CEK JIKA USER MEMBATALKAN LOGIN
@@ -109,7 +109,7 @@ class GoogleController extends Controller
             // 5. Return object dengan data user
             // ================================================
 
-            $googleUser = Socialite::driver('google')->user();
+            $googleUser = Socialite::driver('google')->stateless()->user();
             // ↑ $googleUser berisi data user dari Google
             //   Contoh:
             //   - $googleUser->getId()     = "1234567890" (Google user ID)
@@ -176,16 +176,14 @@ class GoogleController extends Controller
                 ->with('error', 'Terjadi kesalahan saat menghubungi Google. Coba lagi.');
 
         } catch (Exception $e) {
-            // ================================================
-            // ERROR: LAINNYA
-            // ================================================
+    dd(
+        get_class($e),
+        $e->getMessage(),
+        $e->getFile(),
+        $e->getLine()
+    );
+}
 
-            logger()->error('OAuth Error: ' . $e->getMessage());
-
-            return redirect()
-                ->route('login')
-                ->with('error', 'Gagal login. Silakan coba lagi.');
-        }
     }
 
     /**

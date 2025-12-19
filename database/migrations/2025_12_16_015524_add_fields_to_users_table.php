@@ -34,6 +34,7 @@ return new class extends Migration
             // ================================================
             $table->index('google_id');
             // ↑ Index mempercepat pencarian WHERE google_id = '...'
+            $table->string('phone')->nullable()->after('avatar');
         });
     }
 

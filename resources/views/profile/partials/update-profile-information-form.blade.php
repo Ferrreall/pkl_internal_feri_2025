@@ -2,7 +2,7 @@
 
 <p class="text-muted small">Perbarui informasi profil dan alamat email kamu.</p>
 
-<form id="send-verification" method="post" action="#">
+<form id="send-verification" method="post" action="{{ route('verification.send') }}">
     @csrf
 </form>
 

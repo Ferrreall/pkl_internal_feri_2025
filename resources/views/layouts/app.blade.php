@@ -1,133 +1,180 @@
+{{-- ================================================================
+     FILE: resources/views/layouts/app.blade.php
+     ================================================================
+
+     INI ADALAH MASTER LAYOUT / PARENT TEMPLATE
+
+     KONSEP TEMPLATE INHERITANCE:
+     ┌─────────────────────────────────────────────┐
+     │              layouts/app.blade.php          │
+     │   ┌─────────────────────────────────────┐   │
+     │   │  Navbar (sama di semua halaman)     │   │
+     │   ├─────────────────────────────────────┤   │
+     │   │  @yield('content')                  │   │
+     │   │  ← Konten berbeda tiap halaman      │   │
+     │   ├─────────────────────────────────────┤   │
+     │   │  Footer (sama di semua halaman)     │   │
+     │   └─────────────────────────────────────┘   │
+     └─────────────────────────────────────────────┘
+
+     KEUNTUNGAN:
+     - DRY (Dont Repeat Yourself)
+     - Navbar/Footer hanya ditulis 1x
+     - Update di 1 tempat = update semua halaman
+
+     ================================================================ --}}
+
 <!DOCTYPE html>
+{{-- ↑ Deklarasi HTML5 --}}
 
-<!-- =========================================================
-* Sneat - Bootstrap 5 HTML Admin Template - Pro | v1.0.0
-==============================================================
-
-* Product Page: https://themeselection.com/products/sneat-bootstrap-html-admin-template/
-* Created by: ThemeSelection
-* License: You must have a valid license purchased in order to legally use the theme for your project.
-* Copyright ThemeSelection (https://themeselection.com)
-
-=========================================================
- -->
-<!-- beautify ignore:start -->
-<html
-    lang="en"
-    class="light-style layout-menu-fixed"
-    dir="ltr"
-    data-theme="theme-default"
-    data-assets-path="../assets/"
-    data-template="vertical-menu-template-free">
+<html lang="id">
+{{-- ↑ lang="id" penting untuk:
+       - Screen reader (aksesibilitas)
+       - SEO (search engine tahu bahasa halaman)
+       - Auto-translate browser --}}
 
 <head>
-    <meta charset="utf-8" />
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <meta charset="UTF-8">
+    {{-- ↑ Encoding karakter UTF-8
+           Mendukung karakter Indonesia, emoji, dll --}}
 
-    <title>Dashboard - Analytics | Sneat - Bootstrap 5 HTML Admin Template - Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{-- ↑ VIEWPORT META - SANGAT PENTING untuk responsive!
+           width=device-width: lebar sesuai layar device
+           initial-scale=1.0: zoom level awal 100%
+           Tanpa ini, website terlihat kecil di HP --}}
 
-    <meta name="description" content="" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    {{-- ↑ CSRF TOKEN untuk request AJAX
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="../assets/img/favicon/favicon.ico" />
+         CSRF (Cross-Site Request Forgery) adalah serangan dimana
+         hacker mengirim request dari website lain menggunakan
+         session user yang masih aktif.
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
-        rel="stylesheet" />
+         CONTOH SERANGAN:
+         User login di tokoonline.com
+         User buka malicious-site.com
+         Malicious site punya form tersembunyi:
+         <form action="tokoonline.com/cart/checkout" method="POST">
+         Form ini auto-submit, dan karena browser masih punya
+         session tokoonline, request berhasil!
 
-    <!-- Icons. Uncomment required icon fonts -->
-    <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/boxicons.css') }}" />
+         SOLUSI:
+         Setiap form harus punya token random yang hanya diketahui
+         server. Token ini disimpan di meta tag agar bisa diakses
+         JavaScript untuk AJAX request.
 
-    <!-- Core CSS -->
-    <link rel="stylesheet" href="{{ asset('assets/vendor/css/core.css') }}" class="template-customizer-core-css" />
-    <link rel="stylesheet" href="{{ asset('assets/vendor/css/theme-default.css') }}" class="template-customizer-theme-css" />
-    <link rel="stylesheet" href="{{ asset('assets/css/demo.css') }}" />
+         JavaScript mengambil token:
+         const token = document.querySelector('meta[name="csrf-token"]').content --}}
 
-    <!-- Vendors CSS -->
-    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
+    <title>@yield('title', 'Toko Online') - {{ config('app.name') }}</title>
+    {{-- ↑ PENJELASAN DIRECTIVE @yield():
 
-    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
+         @yield('nama', 'default') adalah PLACEHOLDER
+         Akan diisi oleh child template dengan @section()
 
-    <!-- Page CSS -->
+         ALUR:
+         1. Child: @section('title', 'Katalog Produk')
+         2. Parent: @yield('title') diganti 'Katalog Produk'
+         3. Hasil: "Katalog Produk - Toko Online"
 
-    <!-- Helpers -->
-    <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
+         'Toko Online' adalah DEFAULT jika child tidak set title
 
-    <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
-    <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
-    <script src="{{ asset('assets/js/config.js') }}"></script>
+         {{ config('app.name') }}
+         Mengambil nilai APP_NAME dari file .env
+         .env: APP_NAME="Toko Online"
+         Hasil: "Toko Online" --}}
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    {{-- ↑ DIRECTIVE @vite() - Menyisipkan CSS dan JS
+
+         CARA KERJA VITE:
+
+         DEVELOPMENT (npm run dev):
+         Vite berjalan sebagai server di port 5173
+         @vite() menghasilkan:
+         <script type="module" src="http://localhost:5173/@vite/client">
+         <script type="module" src="http://localhost:5173/resources/js/app.js">
+         Hot Module Replacement (HMR) aktif - edit langsung terlihat
+
+         PRODUCTION (npm run build):
+         File dikompilasi ke public/build/
+         @vite() membaca manifest.json untuk dapetin nama file dengan hash
+         <link rel="stylesheet" href="/build/assets/app-Dk3J8sH2.css">
+         <script type="module" src="/build/assets/app-L3hF9kD1.js">
+         Hash di nama file untuk cache busting --}}
+
+    @stack('styles')
+    {{-- ↑ STACK adalah tempat kumpulan konten dari child
+
+         BERBEDA DENGAN @yield:
+         - @yield: 1 child hanya 1x isi, replace
+         - @stack: banyak @push bisa ditumpuk
+
+         CARA PAKAI DI CHILD:
+         @push('styles')
+             <link rel="stylesheet" href="/custom.css">
+         @endpush
+
+         @push('styles')
+             <style>.product-card { border: 1px solid red }</style>
+         @endpush
+
+         HASIL: Kedua block ditampilkan --}}
 </head>
 
 <body>
-    <!-- Layout wrapper -->
-    <div class="layout-wrapper layout-content-navbar">
-        <div class="layout-container">
-            <!-- Menu -->
-            @include('layouts.components.sidebar')
-            <!-- / Menu -->
+    @include('partials.navbar')
+    {{-- ↑ DIRECTIVE @include() - Menyisipkan File Lain
 
-            <!-- Layout container -->
-            <div class="layout-page">
-                <!-- Navbar -->
-                  @include('layouts.components.navbar')
-                <!-- / Navbar -->
+         Sama seperti copy-paste isi file ke sini
 
-                <!-- Content wrapper -->
-                <div class="content-wrapper">
+         @include('partials.navbar') artinya:
+         Sisipkan file: resources/views/partials/navbar.blade.php
 
-                    <main class="py-4">
-                        @yield('content')
-                    </main>
+         PATH MENGGUNAKAN DOT NOTATION:
+         partials.navbar = partials/navbar.blade.php
+         admin.products.form = admin/products/form.blade.php
 
-                    <!-- Footer -->
-                    @include('layouts.components.footer')
-                    <!-- / Footer -->
+         PASSING DATA KE INCLUDE:
+         @include('partials.product-card', ['product' => $item])
+         Variabel $product tersedia di dalam product-card.blade.php
 
-                    <div class="content-backdrop fade"></div>
-                </div>
-                <!-- Content wrapper -->
-            </div>
-            <!-- / Layout page -->
-        </div>
+         BEDANYA DENGAN @extends:
+         - @extends: inheritance (parent-child relationship)
+         - @include: composition (menyisipkan partial/fragment) --}}
 
-        <!-- Overlay -->
-        <div class="layout-overlay layout-menu-toggle"></div>
-    </div>
-    <!-- / Layout wrapper -->
-
-    <div class="buy-now">
-        <a
-            href="https://themeselection.com/products/sneat-bootstrap-html-admin-template/"
-            target="_blank"
-            class="btn btn-danger btn-buy-now">Upgrade to Pro</a>
+    <div class="container mt-3">
+        @include('partials.flash-messages')
     </div>
 
-    <!-- Core JS -->
-    <!-- build:js assets/vendor/js/core.js -->
-    <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
-    <script src="{{ asset('assets/vendor/libs/popper/popper.js') }}"></script>
-    <script src="{{ asset('assets/vendor/js/bootstrap.js') }}"></script>
-    <script src="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
+    <main class="min-vh-100">
+    {{-- ↑ min-vh-100 = minimum 100% viewport height
+           Agar footer tetap di bawah meski konten sedikit --}}
 
-    <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
-    <!-- endbuild -->
+        @yield('content')
+        {{-- ↑ CONTENT UTAMA dari child template
 
-    <!-- Vendors JS -->
-    <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
+             Di child:
+             @section('content')
+                 <h1>Selamat Datang</h1>
+                 <p>Ini konten halaman</p>
+             @endsection
 
-    <!-- Main JS -->
-    <script src="{{ asset('assets/js/main.js') }}"></script>
+             @yield('content') akan diganti dengan semua konten
+             di dalam @section('content') child --}}
+    </main>
 
-    <!-- Page JS -->
-    <script src="{{ asset('assets/js/dashboards-analytics.js') }}"></script>
+    @include('partials.footer')
 
-    <!-- Place this tag in your head or just before your close body tag. -->
-    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    @stack('scripts')
+    {{-- ↑ Tempat menumpuk JavaScript dari child
+
+         Child bisa push script khusus untuk halaman itu:
+         @push('scripts')
+         <script>
+             console.log('Ini hanya di halaman detail produk');
+         </script>
+         @endpush --}}
 </body>
-
 </html>

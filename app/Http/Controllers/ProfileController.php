@@ -28,38 +28,34 @@ class ProfileController extends Controller
     /**
      * Mengupdate informasi profil user.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
-    {
-        $user = $request->user();
+   public function update(ProfileUpdateRequest $request): RedirectResponse
+{
+    $user = $request->user();
 
-        // 1. Handle Upload Avatar
-        // Cek apakah user mengupload file baru di input 'avatar'?
-        if ($request->hasFile('avatar')) {
-            // Upload file baru dan dapatkan path-nya (e.g., avatars/xxx.jpg)
-            $avatarPath = $this->uploadAvatar($request, $user);
+    // 1. Handle Upload Avatar
+    if ($request->hasFile('avatar')) {
+        // Upload file dan dapatkan path relatif
+        $avatarPath = $this->uploadAvatar($request, $user);
 
-            // Simpan path ke properti model, tapi belum di-save ke DB (masih di memory)
-            $user->avatar = $avatarPath;
-        }
-
-        // 2. Update Data Text (Nama, Email, dll)
-        // fill() mengisi atribut model dengan data validasi, tapi belum disimpan ke DB.
-        // Ini lebih aman daripada $user->update() langsung karena kita mau cek 'isDirty' dulu.
-        $user->fill($request->validated());
-
-        // 3. Cek Perubahan Email
-        // Jika email berubah, kita harus membatalkan status verifikasi email (isDirty cek perubahan di memory).
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
-        }
-
-        // 4. Simpan ke Database
-        // Method save() baru benar-benar menjalankan query UPDATE ke database.
-        $user->save();
-
-        return Redirect::route('profile.edit')
-            ->with('success', 'Profil berhasil diperbarui!');
+        // Simpan path ke user
+        $user->avatar = $avatarPath;
     }
+
+    // 2. Update data lain (name, phone, address, dll)
+    $user->fill($request->validated());
+
+    // 3. Jika email berubah, reset status verifikasi
+    if ($user->isDirty('email')) {
+        $user->email_verified_at = null;
+    }
+
+    // 4. Save ke database
+    $user->save(); // <<< pastikan save ini ada di sini
+
+    return Redirect::route('profile.edit')
+        ->with('success', 'Profil berhasil diperbarui!');
+}
+
 
     /**
      * Helper khusus untuk menangani logika upload avatar.

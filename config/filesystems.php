@@ -28,7 +28,9 @@ return [
     |
     */
 
-    'disks' => [
+   // config/filesystems.php
+
+'disks' => [
     'local' => [
         'driver' => 'local',
         'root' => storage_path('app'),  // storage/app
@@ -50,8 +52,7 @@ return [
         'bucket' => env('AWS_BUCKET'),
         'url' => env('AWS_URL'),
     ],
-
-    ],
+],
 
     /*
     |--------------------------------------------------------------------------
