@@ -16,10 +16,10 @@
                     Belanja mudah, aman, dan nyaman.
                 </p>
                 <div class="d-flex gap-3 mt-3">
-                    <a href="#" class="text-secondary fs-5"><i class="bi bi-facebook"></i></a>
-                    <a href="#" class="text-secondary fs-5"><i class="bi bi-instagram"></i></a>
-                    <a href="#" class="text-secondary fs-5"><i class="bi bi-twitter-x"></i></a>
-                    <a href="#" class="text-secondary fs-5"><i class="bi bi-youtube"></i></a>
+                    <a href="https://wa.me/qr/RXNKWGODZDDRE1" class="text-secondary fs-5"><i class="bi bi-whatsapp"></i></a>
+                    <a href="https://www.instagram.com/fwrrrdn/" class="text-secondary fs-5"><i class="bi bi-instagram"></i></a>
+                    <a href="https://github.com/Ferrreall" class="text-secondary fs-5"><i class="bi bi-github"></i></i></a>
+                    <a href="https://www.youtube.com/watch?v=IjqQEu-VZTU" class="text-secondary fs-5"><i class="bi bi-youtube"></i></a>
                 </div>
             </div>
 
