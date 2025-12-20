@@ -91,5 +91,32 @@ public function getInitialsAttribute(): string
     // Ambil maksimal 2 huruf pertama saja
     return substr($initials, 0, 2);
 }
+
+/**
+ * Cek apakah produk tertentu ada di wishlist user.
+ *
+ * @param int $productId
+ * @return bool
+ */
+public function hasInWishlist($productId)
+{
+    // Pastikan kamu sudah memiliki relasi 'wishlists' atau model Wishlist
+    return $this->wishlists()->where('product_id', $productId)->exists();
+}
+
+/**
+ * Relasi ke tabel Wishlist.
+ */
+public function wishlists()
+{
+    return $this->hasMany(Wishlist::class);
+}
     
+public function isAdmin()
+{
+    // Sesuaikan dengan kolom di database kamu. 
+    // Jika kolomnya bernama 'role', gunakan: $this->role === 'admin'
+    // Jika kolomnya bernama 'is_admin' (boolean), gunakan: $this->is_admin
+    return $this->role === 'admin';
+}
 }

@@ -46,14 +46,14 @@
                 @auth
                     {{-- Wishlist --}}
                     <li class="nav-item">
-                        {{-- <a class="nav-link position-relative" href="{{ route('wishlist.index') }}">
+                        <a class="nav-link position-relative" href="{{ route('wishlist.index') }}">
                             <i class="bi bi-heart"></i>
                             @if(auth()->user()->wishlists()->count() > 0)
                                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
                                     {{ auth()->user()->wishlists()->count() }}
                                 </span>
                             @endif
-                        </a> --}}
+                        </a>
                     </li>
 
                     {{-- Cart --}}
@@ -89,18 +89,18 @@
                                 </a>
                             </li>
                             <li>
-                                {{-- <a class="dropdown-item" href="{{ route('orders.index') }}">
+                                <a class="dropdown-item" href="{{ route('orders.index') }}">
                                     <i class="bi bi-bag me-2"></i> Pesanan Saya
-                                </a> --}}
+                                </a>
                             </li>
-                            {{-- @if(auth()->user()->isAdmin())
+                            @if(auth()->user()->isAdmin())
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <a class="dropdown-item text-primary" href="{{ route('admin.dashboard') }}">
                                         <i class="bi bi-speedometer2 me-2"></i> Admin Panel
                                     </a>
                                 </li>
-                            @endif --}}
+                            @endif
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">

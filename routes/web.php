@@ -37,17 +37,17 @@ Route::middleware('auth')->group(function () {
     Route::patch('/cart/{item}', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/cart/{item}', [CartController::class, 'remove'])->name('cart.remove');
 
-    // // Wishlist
-    // Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
-    // Route::post('/wishlist/toggle/{product}', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
+    // Wishlist
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
+    Route::post('/wishlist/toggle/{product}', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
 
-    // // Checkout
-    // Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-    // Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    // Checkout
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
 
-    // // Pesanan Saya
-    // Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-    // Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    // Pesanan Saya
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 
     // Profil
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -67,16 +67,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-    // // Produk CRUD
-    // Route::resource('products', AdminProductController::class);
+    // Produk CRUD
+    Route::resource('products', AdminProductController::class);
 
-    // // Kategori CRUD
-    // Route::resource('categories', AdminCategoryController::class);
+    // Kategori CRUD
+    Route::resource('categories', AdminCategoryController::class);
 
-    // // Manajemen Pesanan
-    // Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
-    // Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
-    // Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    // Manajemen Pesanan
+    Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+    Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     // ↑ Admin dashboard

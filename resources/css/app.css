@@ -80,3 +80,28 @@ footer {
   font-size: 0.75rem;
   font-weight: 600;
 }
+
+/* resources/css/app.css */
+.bg-primary {
+    background-color: #0d6efd !important; /* Ganti kode HEX ini sesuai keinginan */
+}
+
+/* Custom class untuk background gradient */
+.hero-gradient {
+    /* Gradasi dari Biru (#007bff) ke Indigo (#6610f2) dengan sudut 135 derajat */
+    background: linear-gradient(135deg, #841250 0%, #2F1262 100%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* resources/css/app.css */
+.category-card {
+    transition: all 0.3s ease;
+    border: 1px solid #f0f0f0;
+    border-radius: 12px;
+}
+
+.category-card:hover {
+    transform: translateY(-8px); /* Mengangkat kartu */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1); /* Tambah bayangan lembut */
+    border-color: #6610f2; /* Warna border berubah tipis */
+}

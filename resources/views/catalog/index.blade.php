@@ -7,6 +7,13 @@
 
 @section('title', 'Katalog Produk')
 
+<style>
+    .pagination .page-link {
+        font-size: 13px;
+        padding: 4px 8px;
+    }
+</style>
+
 @section('content')
 <div class="container py-4">
     <div class="row">
@@ -149,7 +156,7 @@
 
                 {{-- Pagination --}}
                 <div class="d-flex justify-content-center mt-5">
-                    {{ $products->links() }}
+                    {{ $products->links('pagination::bootstrap-5') }}
                 </div>
             @else
                 <div class="text-center py-5">

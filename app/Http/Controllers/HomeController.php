@@ -1,8 +1,5 @@
 <?php
-// ================================================
-// FILE: app/Http/Controllers/HomeController.php
-// FUNGSI: Menangani halaman utama website
-// ================================================
+
 
 namespace App\Http\Controllers;
 
@@ -11,10 +8,6 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
-// ↑ CLASS DEFINITION:
-//   - HomeController adalah nama class (harus sama dengan nama file)
-//   - extends Controller: mewarisi fitur dari Controller dasar Laravel
-//     (seperti middleware, response helpers, dll)
 {
     /**
      * Menampilkan halaman beranda.
@@ -22,54 +15,18 @@ class HomeController extends Controller
      * @return \Illuminate\View\View
      */
     public function index()
-    // ↑ METHOD INDEX:
-    //   - public: bisa diakses dari luar class (oleh Router)
-    //   - function index(): nama method, akan dipanggil oleh route
-    //   - Tidak ada parameter karena homepage tidak butuh input user
     {
-        // ============================================================
-        // STEP 1: AMBIL DATA KATEGORI UNTUK SECTION "KATEGORI POPULER"
-        // ============================================================
-
         $categories = Category::query()
-        // ↑ Category::query() memulai "Query Builder" baru
-        //   Sama seperti: SELECT * FROM categories
-        //   Kita pakai query() agar bisa chaining method
-
             ->active()
-            // ↑ SCOPE METHOD dari Model Category
-            //   Didefinisikan di Model: public function scopeActive($query)
-            //   Menambahkan: WHERE is_active = true
-            //   Jadi query jadi: SELECT * FROM categories WHERE is_active = 1
-
             ->withCount(['activeProducts' => function($q) {
-            // ↑ withCount() menghitung jumlah relasi tanpa load semua data
-            //   Hasil: menambah kolom virtual "active_products_count"
-            //   Query: SELECT categories.*, (SELECT COUNT(*) FROM products...) as active_products_count
-            //
             //   ['activeProducts' => function($q)] = custom count dengan kondisi
                 $q->where('is_active', true)
                   ->where('stock', '>', 0);
-                // ↑ Hanya hitung produk yang:
-                //   - is_active = true (tidak diarsipkan)
-                //   - stock > 0 (masih ada stok)
             }])
 
             ->having('active_products_count', '>', 0)
-            // ↑ HAVING bukan WHERE karena active_products_count adalah kolom virtual
-            //   (hasil dari aggregate function)
-            //   Filter: hanya kategori yang punya minimal 1 produk aktif
-            //   Kategori kosong tidak ditampilkan
-
             ->orderBy('name')
-            // ↑ Urutkan berdasarkan nama alfabet (A-Z)
-            //   ORDER BY name ASC
-
             ->take(6)
-            // ↑ Batasi hanya 6 kategori pertama
-            //   LIMIT 6
-            //   Kenapa 6? Karena di grid 6 kolom pas untuk responsive
-
             ->get();
             // ↑ EKSEKUSI QUERY dan ambil hasilnya
             //   Return: Collection berisi object Category
@@ -85,13 +42,7 @@ class HomeController extends Controller
             //   ORDER BY name ASC
             //   LIMIT 6
 
-        // ============================================================
-        // STEP 2: AMBIL PRODUK UNGGULAN (FEATURED PRODUCTS)
-        // ============================================================
-
         $featuredProducts = Product::query()
-        // ↑ Mulai query baru untuk tabel products
-
             ->with(['category', 'primaryImage'])
             // ↑ EAGER LOADING - SANGAT PENTING UNTUK PERFORMA!
             //
