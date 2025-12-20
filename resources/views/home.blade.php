@@ -64,7 +64,7 @@
         <div class="container">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="mb-0">Produk Unggulan</h2>
-                <a href="{{ route('catalog.index') }}" class="btn btn-outline-primary">
+                <a href="{{ route('catalog.index') }}" class="btn btn-brand-search">
                     Lihat Semua <i class="bi bi-arrow-right"></i>
                 </a>
             </div>

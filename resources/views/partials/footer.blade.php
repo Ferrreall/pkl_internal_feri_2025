@@ -9,7 +9,7 @@
             {{-- Brand & Description --}}
             <div class="col-lg-4 col-md-6">
                 <h5 class="text-white mb-3">
-                    <i class="bi bi-bag-heart-fill me-2"></i>TokoOnline
+                    <i class="bi bi-hurricane"> TokoOnline </i>
                 </h5>
                 <p class="text-secondary">
                     Toko online terpercaya dengan berbagai produk berkualitas.
@@ -86,7 +86,8 @@
                 </p>
             </div>
             <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">
-                <img src="{{ asset('images/payment-methods.png') }}" alt="Payment Methods" height="30">
+                <i class="bi bi-paypal"></i>
+                <i class="bi bi-credit-card-fill"></i>
             </div>
         </div>
     </div>

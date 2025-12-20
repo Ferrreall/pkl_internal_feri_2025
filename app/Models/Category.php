@@ -96,7 +96,7 @@ class Category extends Model
             return asset('storage/' . $this->image);
         }
         // Jika tidak, tampilkan placeholder
-        return asset('images/Dokja.jpg');
+        return asset('images/fwebp.webp');
     }
 
     /**

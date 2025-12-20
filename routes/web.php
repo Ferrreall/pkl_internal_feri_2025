@@ -14,6 +14,8 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\OrderController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 
@@ -22,8 +24,8 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Katalog Produk
-Route::get('/products', [CatalogController::class, 'index'])->name('catalog.index');
-Route::get('/products/{slug}', [CatalogController::class, 'show'])->name('catalog.show');
+Route::get('/catalog', [CatalogController::class, 'index'])->name('catalog.index');
+Route::get('/catalog/{slug}', [CatalogController::class, 'show'])->name('catalog.show');
 
 
 // ================================================
@@ -65,13 +67,15 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     // Dashboard
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/admin2', [DashboardController::class, 'index'])->name('dashboard');
 
     // Produk CRUD
     Route::resource('products', AdminProductController::class);
 
     // Kategori CRUD
     Route::resource('categories', AdminCategoryController::class);
+
+    
 
     // Manajemen Pesanan
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
@@ -116,8 +120,16 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 });
 
+Route::resource('categories', CategoryController::class)->except(['show']); // Kategori biasanya tidak butuh show detail page
+
+    // Produk
+    Route::resource('products', ProductController::class);
+
+
 
 Route::get('/auth/google', [GoogleController::class, 'redirectToGoogle'])->name('auth.google');
 
 // Callback dari Google
 Route::get('/auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
+
+// routes/web.php

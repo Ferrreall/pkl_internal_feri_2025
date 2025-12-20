@@ -105,3 +105,69 @@ footer {
     box-shadow: 0 10px 25px rgba(0,0,0,0.1); /* Tambah bayangan lembut */
     border-color: #6610f2; /* Warna border berubah tipis */
 }
+
+.brand-color {
+    color: #84124F !important;
+}
+
+/* Supaya icon-nya juga ikut berubah warna */
+.brand-color i {
+    color: #84124F !important;
+}
+
+/* Tombol pencarian custom */
+.btn-brand-search {
+    color: #84124F;
+    border-color: #84124F;
+    background-color: transparent;
+    transition: all 0.3s ease;
+}
+
+.btn-brand-search:hover {
+    background-color: #84124F;
+    color: white;
+    border-color: #84124F;
+}
+
+/* Garis fokus saat input diketik agar tidak biru (Opsional biar makin rapi) */
+.form-control:focus {
+    border-color: #84124F;
+    box-shadow: 0 0 0 0.25rem rgba(132, 18, 79, 0.25);
+}
+
+/* Tombol Maroon Solid */
+.btn-brand-filled {
+    background-color: #84124F !important;
+    border-color: #84124F !important;
+    color: white !important;
+    transition: all 0.3s ease;
+}
+
+.btn-brand-filled:hover {
+    background-color: #6a0e3f !important; /* Warna agak gelap dikit pas di-hover */
+    border-color: #6a0e3f !important;
+    transform: scale(1.02); /* Efek membesar dikit */
+}
+
+.btn-brand-filled:disabled {
+    background-color: #cccccc !important;
+    border-color: #cccccc !important;
+}
+
+.product-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.product-card:hover {
+    transform: translateY(-10px) !important;
+    box-shadow: 0 15px 30px rgba(132, 18, 79, 0.15) !important; /* Bayangan tipis warna maroon */
+}
+
+.breadcrumb-item a {
+    color: #84124F;
+    text-decoration: none;
+}
+.breadcrumb-item a:hover {
+    text-decoration: underline;
+    color: #6a0e3f;
+}
