@@ -1,6 +1,6 @@
 {{-- ================================================
      FILE: resources/views/cart/index.blade.php
-     FUNGSI: Halaman keranjang belanja
+     FUNGSI: Halaman keranjang belanja (Fixed Subtotal)
      ================================================ --}}
 
 @extends('layouts.app')
@@ -14,6 +14,8 @@
     </h2>
 
     @if($cart && $cart->items->count())
+        @php $grandTotal = 0; @endphp {{-- Inisialisasi Total Akhir --}}
+        
         <div class="row">
             {{-- Cart Items --}}
             <div class="col-lg-8 mb-4">
@@ -31,6 +33,11 @@
                             </thead>
                             <tbody>
                                 @foreach($cart->items as $item)
+                                    @php 
+                                        // Hitung subtotal secara manual: Harga x Jumlah
+                                        $itemSubtotal = $item->product->price * $item->quantity;
+                                        $grandTotal += $itemSubtotal;
+                                    @endphp
                                     <tr>
                                         <td>
                                             <div class="d-flex align-items-center">
@@ -44,13 +51,13 @@
                                                         {{ Str::limit($item->product->name, 40) }}
                                                     </a>
                                                     <div class="small text-muted">
-                                                        {{ $item->product->category->name }}
+                                                        {{ $item->product->category->name ?? 'Kategori' }}
                                                     </div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td class="text-center align-middle">
-                                            {{ $item->product->formatted_price }}
+                                            Rp {{ number_format($item->product->price, 0, ',', '.') }}
                                         </td>
                                         <td class="text-center align-middle">
                                             <form action="{{ route('cart.update', $item->id) }}" method="POST"
@@ -66,7 +73,8 @@
                                             </form>
                                         </td>
                                         <td class="text-end align-middle fw-bold">
-                                            Rp {{ number_format($item->subtotal, 0, ',', '.') }}
+                                            {{-- Tampilkan hasil hitungan manual --}}
+                                            Rp {{ number_format($itemSubtotal, 0, ',', '.') }}
                                         </td>
                                         <td class="align-middle">
                                             <form action="{{ route('cart.remove', $item->id) }}" method="POST">
@@ -95,13 +103,13 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-2">
                             <span>Total Harga ({{ $cart->items->sum('quantity') }} barang)</span>
-                            <span>Rp {{ number_format($cart->items->sum('subtotal'), 0, ',', '.') }}</span>
+                            <span>Rp {{ number_format($grandTotal, 0, ',', '.') }}</span>
                         </div>
                         <hr>
                         <div class="d-flex justify-content-between mb-3">
                             <span class="fw-bold">Total</span>
                             <span class="fw-bold text-primary fs-5">
-                                Rp {{ number_format($cart->items->sum('subtotal'), 0, ',', '.') }}
+                                Rp {{ number_format($grandTotal, 0, ',', '.') }}
                             </span>
                         </div>
                         <a href="{{ route('checkout.index') }}" class="btn btn-primary w-100 btn-lg">

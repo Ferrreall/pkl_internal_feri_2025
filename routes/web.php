@@ -25,7 +25,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Katalog Produk
 Route::get('/catalog', [CatalogController::class, 'index'])->name('catalog.index');
-Route::get('/catalog/{slug}', [CatalogController::class, 'show'])->name('catalog.show');
+Route::get('/product/{slug}', [CatalogController::class, 'show'])->name('catalog.show');
 
 
 // ================================================

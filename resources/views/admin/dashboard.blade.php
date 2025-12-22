@@ -133,7 +133,7 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a href="{{ route('admin.products.create') }}" class="btn btn-primary">
+                        {{-- <a href="{{ route('admin.products.create') }}" class="btn btn-primary">
                             <i class="bi bi-plus-circle me-2"></i> Tambah Produk
                         </a>
                         <a href="{{ route('admin.categories.index') }}" class="btn btn-outline-primary">
@@ -141,7 +141,7 @@
                         </a>
                         <a href="{{ route('admin.reports.sales') }}" class="btn btn-outline-primary">
                             <i class="bi bi-file-earmark-bar-graph me-2"></i> Lihat Laporan
-                        </a>
+                        </a> --}}
                     </div>
                 </div>
             </div>
