@@ -11,18 +11,17 @@ class UpdateProductRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        // GANTI DARI false KE true
+        return true; 
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            //
+            // Pastikan rules-nya sudah benar di sini
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric',
+            // ... dst
         ];
     }
 }

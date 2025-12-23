@@ -16,7 +16,7 @@
 
 :root {
   /* Warna Brand Toko */
-  --primary-color: #4f46e5; /* Indigo */
+  --primary-color: #4C80C0; /* Indigo */
   --secondary-color: #10b981; /* Emerald */
   --accent-color: #f59e0b; /* Amber */
 
@@ -33,8 +33,8 @@
 }
 
 .btn-primary:hover {
-  background-color: #4338ca;
-  border-color: #4338ca;
+  background-color: #4C80C0;
+  border-color: #4C80C0;
 }
 
 /* ================================================
@@ -83,14 +83,32 @@ footer {
 
 /* resources/css/app.css */
 .bg-primary {
-    background-color: #0d6efd !important; /* Ganti kode HEX ini sesuai keinginan */
+    background-color: #4C80C0 !important; /* Ganti kode HEX ini sesuai keinginan */
 }
 
 /* Custom class untuk background gradient */
 .hero-gradient {
-    /* Gradasi dari Biru (#007bff) ke Indigo (#6610f2) dengan sudut 135 derajat */
-    background: linear-gradient(135deg, #841250 0%, #2F1262 100%) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    /* Titik 1: 0% - Warna Maroon asli
+       Titik 2: 70% - Warna Deep Purple asli
+       Titik 3: 100% - Warna Putih (#ffffff) untuk efek memudar
+    */
+    background: linear-gradient(180deg, 
+        #4C80C0 0%, 
+        #C4DCFA 75%, 
+        #ffffff 100%) !important;
+    
+    /* Tambahan biar lebih smooth */
+    border-bottom: none;
+    position: relative;
+}
+
+/* Optional: Tambahin overlay halus kalau teksnya agak susah dibaca */
+.hero-gradient::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.05); /* Overlay gelap tipis banget */
+    pointer-events: none;
 }
 
 /* resources/css/app.css */
@@ -103,49 +121,49 @@ footer {
 .category-card:hover {
     transform: translateY(-8px); /* Mengangkat kartu */
     box-shadow: 0 10px 25px rgba(0,0,0,0.1); /* Tambah bayangan lembut */
-    border-color: #6610f2; /* Warna border berubah tipis */
+    border-color: #4C80C0; /* Warna border berubah tipis */
 }
 
 .brand-color {
-    color: #84124F !important;
+    color: #4C80C0 !important;
 }
 
 /* Supaya icon-nya juga ikut berubah warna */
 .brand-color i {
-    color: #84124F !important;
+    color: #4C80C0 !important;
 }
 
 /* Tombol pencarian custom */
 .btn-brand-search {
-    color: #84124F;
-    border-color: #84124F;
+    color: #4C80C0;
+    border-color: #4C80C0;
     background-color: transparent;
     transition: all 0.3s ease;
 }
 
 .btn-brand-search:hover {
-    background-color: #84124F;
+    background-color: #4C80C0;
     color: white;
-    border-color: #84124F;
+    border-color: #4C80C0;
 }
 
 /* Garis fokus saat input diketik agar tidak biru (Opsional biar makin rapi) */
 .form-control:focus {
-    border-color: #84124F;
+    border-color: #4C80C0;
     box-shadow: 0 0 0 0.25rem rgba(132, 18, 79, 0.25);
 }
 
 /* Tombol Maroon Solid */
 .btn-brand-filled {
-    background-color: #84124F !important;
-    border-color: #84124F !important;
+    background-color: #4C80C0 !important;
+    border-color: #4C80C0 !important;
     color: white !important;
     transition: all 0.3s ease;
 }
 
 .btn-brand-filled:hover {
-    background-color: #6a0e3f !important; /* Warna agak gelap dikit pas di-hover */
-    border-color: #6a0e3f !important;
+    background-color: #4C80C0 !important; /* Warna agak gelap dikit pas di-hover */
+    border-color: #4C80C0 !important;
     transform: scale(1.02); /* Efek membesar dikit */
 }
 
@@ -164,10 +182,17 @@ footer {
 }
 
 .breadcrumb-item a {
-    color: #84124F;
+    color: #4C80C0;
     text-decoration: none;
 }
 .breadcrumb-item a:hover {
     text-decoration: underline;
-    color: #6a0e3f;
+    color: #4C80C0;
+}
+
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+.modal {
+    z-index: 1050 !important;
 }

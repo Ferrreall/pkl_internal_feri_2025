@@ -101,14 +101,14 @@
                         <h5 class="mb-0">Ringkasan Belanja</h5>
                     </div>
                     <div class="card-body">
-                        <div class="d-flex justify-content-between mb-2">
+                        <div class="d-flex justify-content-between mb-2" style="color: #4C80C0">
                             <span>Total Harga ({{ $cart->items->sum('quantity') }} barang)</span>
                             <span>Rp {{ number_format($grandTotal, 0, ',', '.') }}</span>
                         </div>
                         <hr>
                         <div class="d-flex justify-content-between mb-3">
                             <span class="fw-bold">Total</span>
-                            <span class="fw-bold text-primary fs-5">
+                            <span class="fw-bold text-primary fs-5" style="color: #4C80C0">
                                 Rp {{ number_format($grandTotal, 0, ',', '.') }}
                             </span>
                         </div>

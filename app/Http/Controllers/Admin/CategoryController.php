@@ -64,38 +64,30 @@ class CategoryController extends Controller
      * Memperbarui data kategori.
      */
     public function update(Request $request, Category $category)
-    {
-        // 1. Validasi Input
-        $validated = $request->validate([
-            // PENTING: Pada validasi unique saat update, kita harus mengecualikan ID kategori ini sendiri.
-            // Format: unique:table,column,except_id
-            // Jika tidak dikecualikan, Laravel akan menganggap nama ini duplikat (karena sudah ada di DB milik record ini sendiri).
-            'name' => 'required|string|max:100|unique:categories,name,' . $category->id,
-            'description' => 'nullable|string|max:500',
-            'image' => 'nullable|image|max:1024',
-            'is_active' => 'boolean',
-        ]);
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:100|unique:categories,name,' . $category->id,
+        'description' => 'nullable|string|max:500',
+        'image' => 'nullable|image|max:1024',
+    ]);
 
-        // 2. Handle Ganti Gambar
-        if ($request->hasFile('image')) {
-            // Hapus gambar lama dulu agar tidak menumpuk sampah file di server (Garbage Collection manual).
-            if ($category->image) {
-                Storage::disk('public')->delete($category->image);
-            }
-            // Simpan gambar baru
-            $validated['image'] = $request->file('image')
-                ->store('categories', 'public');
+    $validated['is_active'] = $request->has('is_active');
+
+    if ($request->hasFile('image')) {
+        // Hapus foto lama biar gak menumpuk di server
+        if ($category->image) {
+            Storage::disk('public')->delete($category->image);
         }
-
-        // 3. Update Slug jika nama berubah
-        // Selalu update slug agar sesuai dengan nama terbaru kategori.
-        $validated['slug'] = Str::slug($validated['name']);
-
-        // 4. Update data di database
-        $category->update($validated);
-
-        return back()->with('success', 'Kategori berhasil diperbarui!');
+        
+        // Simpan foto baru ke folder 'categories'
+        $validated['image'] = $request->file('image')->store('categories', 'public');
     }
+
+    $validated['slug'] = Str::slug($validated['name']);
+    $category->update($validated);
+
+    return back()->with('success', 'Kategori berhasil diperbarui!');
+}
 
     /**
      * Menghapus kategori.

@@ -4,12 +4,12 @@
     {{-- Gambar --}}
     <div class="position-relative overflow-hidden bg-light" style="padding-top: 100%;">
         <img src="{{ $product->image_url }}"
-             class="card-img-top position-absolute top-0 start-0 w-100 h-100 object-fit-cover">
+            class="card-img-top position-absolute top-0 start-0 w-100 h-100 object-fit-cover">
 
-        @if($product->has_discount)
-             <span class="position-absolute top-0 start-0 m-2 badge bg-danger">
-                 -{{ $product->discount_percentage }}%
-             </span>
+        @if ($product->has_discount)
+            <span class="position-absolute top-0 start-0 m-2 badge bg-danger">
+                -{{ $product->discount_percentage }}%
+            </span>
         @endif
     </div>
 
@@ -22,11 +22,13 @@
             </a>
         </h6>
         <div class="mt-auto">
-            @if($product->has_discount)
-                <p class="fw-bold text-danger mb-0">{{ $product->formatted_price }}</p>
+            @if ($product->has_discount)
+                {{-- Warna kalau ada diskon --}}
+                <p class="fw-bold mb-0" style="color: #4C80C0;">{{ $product->formatted_price }}</p>
                 <small class="text-decoration-line-through text-muted">{{ $product->formatted_original_price }}</small>
             @else
-                <p class="fw-bold text-primary mb-0">{{ $product->formatted_price }}</p>
+                {{-- Harga Normal: Hapus 'text-primary' biar warnanya nggak ketabrak --}}
+                <p class="fw-bold mb-0" style="color: #4C80C0;">{{ $product->formatted_price }}</p>
             @endif
         </div>
     </div>

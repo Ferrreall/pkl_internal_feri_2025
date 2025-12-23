@@ -1,4 +1,5 @@
 <?php
+
 // app/Http/Controllers/Admin/ProductController.php
 
 namespace App\Http\Controllers\Admin;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
-class ProductController extends Controller
+class AdminProductController extends Controller
 {
     /**
      * Menampilkan daftar produk dengan fitur pagination dan filtering.
@@ -23,20 +24,20 @@ class ProductController extends Controller
     public function index(Request $request): View
     {
         $products = Product::query()
-            // Eager Loading: Meload relasi kategori & gambar utama sekaligus.
-            // Tanpa 'with', Laravel akan mengeksekusi 1 query tambahan untuk SETIAP baris produk (N+1 Problem).
+        // Eager Loading: Meload relasi kategori & gambar utama sekaligus.
+        // Tanpa 'with', Laravel akan mengeksekusi 1 query tambahan untuk SETIAP baris produk (N+1 Problem).
             ->with(['category', 'primaryImage'])
 
-            // Filter: Pencarian nama produk
+        // Filter: Pencarian nama produk
             ->when($request->search, function ($query, $search) {
                 $query->search($search); // Menggunakan Scope 'search' di Model Product
             })
-            // Filter: Berdasarkan Kategori
+        // Filter: Berdasarkan Kategori
             ->when($request->category, function ($query, $categoryId) {
                 $query->where('category_id', $categoryId);
             })
-            ->latest() // Urut dari yang terbaru
-            ->paginate(15) // Batasi 15 item per halaman
+            ->latest()           // Urut dari yang terbaru
+            ->paginate(15)       // Batasi 15 item per halaman
             ->withQueryString(); // Memastikan parameter URL (?search=xx) tetap ada saat pindah halaman
 
         // Ambil data kategori untuk dropdown filter di view

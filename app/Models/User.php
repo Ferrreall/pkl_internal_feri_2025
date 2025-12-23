@@ -98,18 +98,19 @@ public function getInitialsAttribute(): string
  * @param int $productId
  * @return bool
  */
-public function hasInWishlist($productId)
-{
-    // Pastikan kamu sudah memiliki relasi 'wishlists' atau model Wishlist
-    return $this->wishlists()->where('product_id', $productId)->exists();
-}
+// app/Models/User.php
 
-/**
- * Relasi ke tabel Wishlist.
- */
+
+// Helper untuk cek apakah user sudah wishlist produk tertentu
+public function hasInWishlist(Product $product)
+{
+    return $this->wishlists()->where('product_id', $product->id)->exists();
+}
 public function wishlists()
 {
-    return $this->hasMany(Wishlist::class);
+    // Relasi User ke Product melalui tabel wishlists
+    return $this->belongsToMany(Product::class, 'wishlists')
+                ->withTimestamps(); // Agar created_at/updated_at di pivot terisi
 }
     
 public function isAdmin()
@@ -119,4 +120,6 @@ public function isAdmin()
     // Jika kolomnya bernama 'is_admin' (boolean), gunakan: $this->is_admin
     return $this->role === 'admin';
 }
+
+
 }

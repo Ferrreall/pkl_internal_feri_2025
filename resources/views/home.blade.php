@@ -25,7 +25,7 @@
                     </a>
                 </div>
                 <div class="col-lg-6 d-none d-lg-block text-center">
-                    <img src="https://p2-ofp.static.pub/ShareResource/na/homepage/sales-cards/lenovo-x1-carbon-gen-13-yoga-9-i-v1.jpg"
+                    <img src="{{ asset('images/purin.jpg') }}"
                          alt="Shopping" class="img-fluid" style="max-height: 400px; object-fit: contain;">
                 </div>
             </div>
