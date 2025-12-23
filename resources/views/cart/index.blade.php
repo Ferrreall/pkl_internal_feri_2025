@@ -108,7 +108,7 @@
                         <hr>
                         <div class="d-flex justify-content-between mb-3">
                             <span class="fw-bold">Total</span>
-                            <span class="fw-bold text-primary fs-5" style="color: #4C80C0">
+                            <span class="fw-bold fs-5" style="color: #4C80C0">
                                 Rp {{ number_format($grandTotal, 0, ',', '.') }}
                             </span>
                         </div>
