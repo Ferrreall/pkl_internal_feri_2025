@@ -34,6 +34,7 @@
        - Auto-translate browser --}}
 
 <head>
+  <meta name="referrer" content="no-referrer">
     <meta charset="UTF-8">
     {{-- ↑ Encoding karakter UTF-8
            Mendukung karakter Indonesia, emoji, dll --}}

@@ -21,15 +21,17 @@ class OrderService
      * 4. Kurangi Stok Produk (Atomic Decrement)
      * 5. Hapus Keranjang
      */
-    public function createOrder(User $user, array $shippingData): Order
-    {
-        // 1. Ambil Keranjang User
-        $cart = $user->cart;
+   public function createOrder(User $user, array $shippingData): Order
+{
+    // 1. Ambil Keranjang User secara manual agar PASTI dapat data terbaru
+    $cart = \App\Models\Cart::where('user_id', $user->id)
+                ->with('items.product')
+                ->first();
 
-        if (!$cart || $cart->items->isEmpty()) {
-            throw new \Exception("Keranjang belanja kosong.");
-        }
-
+    // Gunakan count() untuk pengecekan yang lebih akurat pada database result
+    if (!$cart || $cart->items->count() === 0) {
+        throw new \Exception("Keranjang belanja kosong.");
+    }
         // ==================== DATABASE TRANSACTION START ====================
         // Kita menggunakan DB::transaction untuk membungkus semua proses.
         // Jika ada 1 error saja (misal stok kurang saat mau decrement),

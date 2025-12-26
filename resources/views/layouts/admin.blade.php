@@ -94,7 +94,7 @@
                             @if ($pendingCount > 0)
                                 <span class="badge bg-warning text-dark ms-auto">{{ $pendingCount }}</span>
                             @endif
-                        </a>
+                        </ 
                     </li>
 
                     <li class="nav-item">

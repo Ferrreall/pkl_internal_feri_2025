@@ -150,7 +150,7 @@ footer {
 /* Garis fokus saat input diketik agar tidak biru (Opsional biar makin rapi) */
 .form-control:focus {
     border-color: #4C80C0;
-    box-shadow: 0 0 0 0.25rem rgba(132, 18, 79, 0.25);
+    box-shadow: 0 0 0 0.25rem rgba(76, 128, 192, 0.25) !important;
 }
 
 /* Tombol Maroon Solid */
@@ -195,4 +195,10 @@ footer {
 }
 .modal {
     z-index: 1050 !important;
+}
+
+input.form-control, textarea.form-control {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    transition: all 0.2s ease-in-out;
 }
