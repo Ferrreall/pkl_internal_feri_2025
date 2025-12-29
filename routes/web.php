@@ -12,25 +12,27 @@ use App\Http\Controllers\Admin\AdminProductController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\OrderController;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
-use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\MidtransNotificationController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\Request;
 
-
-
+// ================================================
+// HALAMAN PUBLIK (Tanpa Login)
+// ================================================
 Route::get('/', [HomeController::class, 'index'])->name('home');
-
-// Katalog Produk
 Route::get('/catalog', [CatalogController::class, 'index'])->name('catalog.index');
 Route::get('/product/{slug}', [CatalogController::class, 'show'])->name('catalog.show');
 
+// Google Auth
+Route::get('/auth/google', [GoogleController::class, 'redirectToGoogle'])->name('auth.google');
+Route::get('/auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
 
 // ================================================
-// HALAMAN YANG BUTUH LOGIN (Customer)
+// HALAMAN CUSTOMER (Wajib Login)
 // ================================================
-
 Route::middleware('auth')->group(function () {
     // Keranjang Belanja
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
@@ -50,110 +52,58 @@ Route::middleware('auth')->group(function () {
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 
-    // Profil
+    // Pembayaran
+    Route::get('/orders/{order}/pay', [PaymentController::class, 'show'])->name('orders.pay');
+    Route::get('/orders/{order}/success', [PaymentController::class, 'success'])->name('orders.success');
+    Route::get('/orders/{order}/pending', [PaymentController::class, 'pending'])->name('orders.pending');
+
+    // Profil & Password
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::delete('/profile/avatar', [ProfileController::class, 'destroyAvatar'])
-    ->name('profile.avatar.destroy');
-
-});
-
-
-// ================================================
-// HALAMAN ADMIN (Butuh Login + Role Admin)
-// ================================================
-
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    // Dashboard
-    Route::get('/admin2', [DashboardController::class, 'index'])->name('dashboard');
-
-    // Produk CRUD
-    Route::resource('products', AdminProductController::class);
-
-    // Kategori CRUD
-    Route::resource('categories', AdminCategoryController::class);
-
-    
-
-    // Manajemen Pesanan
-    Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
-    Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
-    Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
-
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-    // ↑ Admin dashboard
-    //   URL: /admin
-    //   Name: admin.dashboard
-
-    Route::resource('products', AdminProductController::class);
-});
-
-
-// ================================================
-// AUTH ROUTES (dari Laravel UI)
-// ================================================
-Auth::routes(['verify' => true]);
-
-Route::get('/email/verify', function () {
-    return view('auth.verify-email'); // buat view verify-email.blade.php
-})->middleware('auth')->name('verification.notice');
-
-// Verifikasi link dari email
-Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill();
-    return redirect('/home'); // ganti sesuai tujuan
-})->middleware(['auth', 'signed'])->name('verification.verify');
-
-// Kirim ulang email verifikasi
-Route::post('/email/verification-notification', function (Request $request) {
-    $request->user()->sendEmailVerificationNotification();
-    return back()->with('message', 'Verification link sent!');
-})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
-
-// ================================================
-// PROFIL - Update Password
-// ================================================
-Route::middleware('auth')->group(function () {
+    Route::delete('/profile/avatar', [ProfileController::class, 'destroyAvatar'])->name('profile.avatar.destroy');
     Route::get('/profile/password', [ProfileController::class, 'editPassword'])->name('profile.password.edit');
     Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 });
 
-Route::resource('categories', CategoryController::class)->except(['show']); // Kategori biasanya tidak butuh show detail page
+// ================================================
+// HALAMAN ADMIN (Auth + Role Admin)
+// ================================================
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    // Dashboard
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Produk
-    Route::resource('products', ProductController::class);
+    // CRUD Produk & Kategori
+    Route::resource('products', AdminProductController::class);
+    Route::resource('categories', AdminCategoryController::class)->except(['show']);
 
-
-
-Route::get('/auth/google', [GoogleController::class, 'redirectToGoogle'])->name('auth.google');
-
-// Callback dari Google
-Route::get('/auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
-
-// routes/web.php
-use App\Http\Controllers\PaymentController;
-
-Route::middleware('auth')->group(function () {
-    // ... routes lainnya
-
-    // Payment Routes
-    Route::get('/orders/{order}/pay', [PaymentController::class, 'show'])
-        ->name('orders.pay');
-    Route::get('/orders/{order}/success', [PaymentController::class, 'success'])
-        ->name('orders.success');
-    Route::get('/orders/{order}/pending', [PaymentController::class, 'pending'])
-        ->name('orders.pending');
+    // Manajemen Pesanan
+    Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+    // Sinkronisasi nama route dengan form di detail pesanan
+    Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
 });
 
-// routes/web.php
+// ================================================
+// MIDTRANS WEBHOOK (Public Access)
+// ================================================
+Route::post('midtrans/notification', [MidtransNotificationController::class, 'handle'])->name('midtrans.notification');
 
-use App\Http\Controllers\MidtransNotificationController;
+// ================================================
+// AUTH & VERIFIKASI EMAIL
+// ================================================
+Auth::routes(['verify' => true]);
 
-// ============================================================
-// MIDTRANS WEBHOOK
-// Route ini HARUS public (tanpa auth middleware)
-// Karena diakses oleh SERVER Midtrans, bukan browser user
-// ============================================================
-Route::post('midtrans/notification', [MidtransNotificationController::class, 'handle'])
-    ->name('midtrans.notification');
+Route::get('/email/verify', function () {
+    return view('auth.verify-email');
+})->middleware('auth')->name('verification.notice');
+
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+    return redirect('/home');
+})->middleware(['auth', 'signed'])->name('verification.verify');
+
+Route::post('/email/verification-notification', function (Request $request) {
+    $request->user()->sendEmailVerificationNotification();
+    return back()->with('message', 'Verification link sent!');
+})->middleware(['auth', 'throttle:6,1'])->name('verification.send');

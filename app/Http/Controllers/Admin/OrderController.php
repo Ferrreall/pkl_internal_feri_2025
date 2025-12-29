@@ -41,34 +41,24 @@ class OrderController extends Controller
      * Update status pesanan (misal: kirim barang)
      * Handle otomatis pengembalian stok jika status diubah jadi Cancelled.
      */
-    public function updateStatus(Request $request, Order $order)
+   public function updateStatus(Request $request, Order $order)
     {
-        // Validasi status yang dikirim form
+        // Validasi disesuaikan dengan enum di migration: 
+        // pending, processing, shipped, delivered, cancelled
         $request->validate([
-            'status' => 'required|in:processing,completed,cancelled'
+            'status' => 'required|in:processing,shipped,delivered,cancelled'
         ]);
 
         $oldStatus = $order->status;
         $newStatus = $request->status;
 
-        // ============================================================
-        // LOGIKA RESTOCK (PENTING!)
-        // ============================================================
-        // Jika admin membatalkan pesanan, stok barang harus dikembalikan ke gudang.
-        // Syarat:
-        // 1. Status baru adalah 'cancelled'
-        // 2. Status lama BUKAN 'cancelled' (agar tidak restock 2x kalau tombol ditekan berkali-kali)
-        // ============================================================
+        // Logika Restock tetap aman
         if ($newStatus === 'cancelled' && $oldStatus !== 'cancelled') {
             foreach ($order->items as $item) {
-                // increment() adalah operasi atomik (thread-safe) di level database.
-                // SQL-nya kurang lebih: UPDATE products SET stock = stock + X WHERE id = Y
-                // Ini aman dari Race Condition jika ada transaksi bersamaan.
                 $item->product->increment('stock', $item->quantity);
             }
         }
 
-        // Update status di database
         $order->update(['status' => $newStatus]);
 
         return back()->with('success', "Status pesanan diperbarui menjadi $newStatus");

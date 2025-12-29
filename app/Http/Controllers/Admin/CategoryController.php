@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class CategoryController extends Controller
@@ -57,7 +58,11 @@ class CategoryController extends Controller
         // 4. Simpan ke Database
         Category::create($validated);
 
+        
+
         return back()->with('success', 'Kategori berhasil ditambahkan!');
+
+        
     }
 
     /**

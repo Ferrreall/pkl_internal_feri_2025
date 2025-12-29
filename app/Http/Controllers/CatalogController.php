@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class CatalogController extends Controller
 {
@@ -12,74 +13,58 @@ class CatalogController extends Controller
      * Menampilkan halaman catalog publik dengan fitur filter lengkap.
      * Logika filtering dibangun secara dinamis menggunakan chain method.
      */
-    public function index(Request $request)
-    {
-        // 1. BASE QUERY
-        // Mulai dengan query dasar: ambil produk
-        // ->with(): Eager Load relasi category & primaryImage untuk menghindari query berulang (N+1).
-        // ->available(): Query Scope (lokal di model Product) yang memfilter produk aktif & stok > 0.
-        $query = Product::query()
-            ->with(['category', 'primaryImage'])
-            ->available(); // Scope 'available'
+   public function index(Request $request)
+{
+    // 1. BASE QUERY
+    $query = Product::query()
+        // OPTIMASI: Select kolom spesifik (hemat memori)
+        ->select(['id', 'category_id', 'name', 'slug', 'price', 'discount_price', 'stock', 'is_active'])
+        ->with(['category', 'primaryImage'])
+        ->available();
 
-        // 2. FILTERING PIPELINE
-        // Menerapkan filter hanya jikda user mengirimkan parameter tertentu.
+    // 2. FILTERING PIPELINE (Tetap sama)
+    if ($request->filled('q')) {
+        $query->search($request->q);
+    }
 
-        // Filter: Search keyword (?q=iphone)
-        if ($request->filled('q')) {
-            $query->search($request->q); // Scope 'search'
-        }
+    if ($request->filled('category')) {
+        $query->byCategory($request->category);
+    }
 
-        // Filter: Category by Slug (?category=elektronik)
-        if ($request->filled('category')) {
-            $query->byCategory($request->category); // Scope 'byCategory'
-        }
+    if ($request->filled('min_price')) {
+        $query->where('price', '>=', $request->min_price);
+    }
+    if ($request->filled('max_price')) {
+        $query->where('price', '<=', $request->max_price);
+    }
 
-        // Filter: Price Range (?min_price=1000&max_price=50000)
-        if ($request->filled('min_price')) {
-            $query->where('price', '>=', $request->min_price);
-        }
-        if ($request->filled('max_price')) {
-            $query->where('price', '<=', $request->max_price);
-        }
+    // 3. SORTING LOGIC (Tetap sama)
+    $sort = $request->get('sort', 'newest');
+    $query->when($sort === 'price_asc', fn($q) => $q->orderBy('price', 'asc'))
+          ->when($sort === 'price_desc', fn($q) => $q->orderBy('price', 'desc'))
+          ->when($sort === 'name_asc', fn($q) => $q->orderBy('name', 'asc'))
+          ->when($sort === 'name_desc', fn($q) => $q->orderBy('name', 'desc'))
+          ->when($sort === 'newest', fn($q) => $q->latest());
 
-        // 3. SORTING LOGIC (?sort=price_asc)
-        // Default sorting adalah 'newest' (terbaru).
-        $sort = $request->get('sort', 'newest');
+    // 4. EXECUTE & PAGINATE
+    $products = $query->paginate(12)->withQueryString();
 
-        // Menggunakan method when() untuk penulisan if-else yang lebih bersih (fungsional).
-        $query->when($sort === 'price_asc', fn($q) => $q->orderBy('price', 'asc'))
-              ->when($sort === 'price_desc', fn($q) => $q->orderBy('price', 'desc'))
-              ->when($sort === 'name_asc', fn($q) => $q->orderBy('name', 'asc'))
-              ->when($sort === 'name_desc', fn($q) => $q->orderBy('name', 'desc'))
-              ->when($sort === 'newest', fn($q) => $q->latest());
-
-        // 4. EXECUTE & PAGINATE
-        // Jalankan query dan ambil 12 produk per halaman.
-        // withQueryString(): Menempelkan parameter filter saat ini ke link pagination (Next/Prev).
-        // Tanpa ini, jika user klik halaman 2, filter pencariannya akan hilang.
-        $products = $query->paginate(12)->withQueryString();
-
-        // 5. DATA PENDUKUNG VIEW (SIDEBAR)
-
-        // Ambil daftar kategori, TAPI:
-        // ->withCount(): Hitung jumlah produk available di dalamnya.
-        // ->having(): Hanya ambil kategori yang PUNYA produk (minimal 1).
-        // Ini mencegah user memilih kategori kosong.
-        $categories = Category::active()
+    // 5. DATA PENDUKUNG VIEW (OPTIMASI CACHE)
+    // Pindah ke Cache biar database gak kerja keras terus buat ambil list kategori
+    $categories = Cache::remember('global_categories', 3600, function () {
+        return Category::active()
             ->withCount(['products' => fn($q) => $q->available()])
             ->having('products_count', '>', 0)
             ->orderBy('name')
             ->get();
+    }); // <-- Pastikan ada tutup kurung & semicolon di sini
 
-        // Hitung Range harga global untuk keperluan UI (misal slider harga minimum-maksimum).
-        // selectRaw lebih efisien daripada tarik semua data lalu di loop php.
-        $priceRange = Product::available()
-            ->selectRaw('MIN(price) as min, MAX(price) as max')
-            ->first();
+    $priceRange = Product::available()
+        ->selectRaw('MIN(price) as min, MAX(price) as max')
+        ->first();
 
-        return view('catalog.index', compact('products', 'categories', 'priceRange'));
-    }
+    return view('catalog.index', compact('products', 'categories', 'priceRange'));
+}
 
     /**
      * Menampilkan detail produk (Single Product Page).
