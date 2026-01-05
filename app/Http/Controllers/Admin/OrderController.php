@@ -11,18 +11,18 @@ class OrderController extends Controller
 {
     /**
      * Menampilkan daftar semua pesanan untuk admin.
-     * Dilengkapi filter by status.
      */
     public function index(Request $request)
     {
         $orders = Order::query()
-            ->with('user') // N+1 prevention: Load data user pemilik order
-            // Fitur Filter Status (?status=pending)
-            ->when($request->status, function($q, $status) {
-                $q->where('status', $status);
+            ->with('user')
+            // Cek apakah ada parameter status di URL
+            ->when($request->filled('status'), function($q) use ($request) {
+                return $q->where('status', $request->status);
             })
-            ->latest() // Urutkan terbaru
-            ->paginate(20);
+            ->latest()
+            ->paginate(20)
+            ->withQueryString(); // PENTING: Supaya saat pindah halaman (pagination), filternya tidak hilang
 
         return view('admin.orders.index', compact('orders'));
     }
@@ -32,35 +32,34 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
-        // Load item produk dan data user
         $order->load(['items.product', 'user']);
         return view('admin.orders.show', compact('order'));
     }
 
     /**
-     * Update status pesanan (misal: kirim barang)
-     * Handle otomatis pengembalian stok jika status diubah jadi Cancelled.
+     * Update status pesanan
      */
-   public function updateStatus(Request $request, Order $order)
+    public function updateStatus(Request $request, Order $order)
     {
-        // Validasi disesuaikan dengan enum di migration: 
-        // pending, processing, shipped, delivered, cancelled
+        // Pastikan in: sesuai dengan yang ada di database kamu (shipped, delivered)
         $request->validate([
-            'status' => 'required|in:processing,shipped,delivered,cancelled'
+            'status' => 'required|in:pending,shipped,delivered,cancelled'
         ]);
 
         $oldStatus = $order->status;
         $newStatus = $request->status;
 
-        // Logika Restock tetap aman
+        // Logika Restock jika pesanan dibatalkan
         if ($newStatus === 'cancelled' && $oldStatus !== 'cancelled') {
             foreach ($order->items as $item) {
-                $item->product->increment('stock', $item->quantity);
+                if ($item->product) {
+                    $item->product->increment('stock', $item->quantity);
+                }
             }
         }
 
         $order->update(['status' => $newStatus]);
 
-        return back()->with('success', "Status pesanan diperbarui menjadi $newStatus");
+        return back()->with('success', "Status pesanan #{$order->order_number} berhasil diubah menjadi " . ucfirst($newStatus));
     }
 }

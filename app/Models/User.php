@@ -53,22 +53,18 @@ class User extends Authenticatable
 
     public function getAvatarUrlAttribute(): string
 {
-    // Prioritas 1: Avatar yang di-upload (file fisik ada di server)
-    // Kita harus cek Storage::exists() agar tidak broken image jika file-nya terhapus manual.
-    // if ($this->avatar && Storage::disk('public')->exists($this->avatar)) {
-    //     return asset('storage/' . $this->avatar);
-    // }
+    // Prioritas 1: Avatar yang di-upload (file lokal di storage)
+    // Jika kolom avatar isinya bukan URL (tidak mulai dengan http), berarti itu file lokal
+    if ($this->avatar && !str_starts_with($this->avatar, 'http')) {
+        return asset('storage/' . $this->avatar);
+    }
 
-    // Prioritas 2: Avatar dari Google (URL eksternal dimulai dengan http)
-    // Biasanya ini terjadi saat user login via Socialite (Google Sign-In).
-    if (str_starts_with($this->avatar ?? '', 'http')) {
+    // Prioritas 2: Avatar dari Google (URL eksternal)
+    if ($this->avatar && str_starts_with($this->avatar, 'http')) {
         return $this->avatar;
     }
 
-    // Prioritas 3: Gravatar (Layanan sedunia untuk avatar berdasarkan email)
-    // Gravatar menggunakan MD5 hash dari email lowercase.
-    // Jika user belum punya gravatar, tampilkan 'mp' (Mystery Person).
-    // &s=200 artinya size gambar 200x200px.
+    // Prioritas 3: Gravatar (Fallback terakhir)
     $hash = md5(strtolower(trim($this->email)));
     return "https://www.gravatar.com/avatar/{$hash}?d=mp&s=200";
 }

@@ -12,10 +12,8 @@
     <div class="d-flex align-items-center gap-4">
         {{-- Avatar Preview --}}
         <div class="position-relative">
-            <img src="{{ Str::startsWith($user->avatar, 'http') ? $user->avatar : asset('images/Dokja.png') }}"
-                alt="Dokja" class="rounded-circle object-fit-cover border" style="width: 100px; height: 100px;">
-
-
+            <img id="avatar-preview" src="{{ $user->avatar_url }}" alt="Avatar"
+                class="rounded-circle object-fit-cover border" style="width: 100px; height: 100px;">
             @if ($user->avatar)
                 <button type="button"
                     onclick="if(confirm('Hapus foto profil?')) document.getElementById('delete-avatar-form').submit()"

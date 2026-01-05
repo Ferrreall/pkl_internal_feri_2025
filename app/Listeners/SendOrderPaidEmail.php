@@ -14,11 +14,15 @@ class SendOrderPaidEmail implements ShouldQueue // <--- PENTING
     public $tries = 3;
 
     public function handle(OrderPaidEvent $event): void
-    {
-        // Kirim email ke user
-        Mail::to($event->order->user->email)
-            ->send(new OrderPaid($event->order));
+{
+    // 1. Ambil data order terbaru beserta user-nya dari database
+    // Ini krusial agar data user tidak 'null' saat diproses di background
+    $order = $event->order->loadMissing('user');
 
-        // Opsional: Kirim notif ke Admin juga
+    // 2. Cek apakah user benar-benar ada sebelum kirim email
+    if ($order && $order->user) {
+        Mail::to($order->user->email)
+            ->send(new \App\Mail\OrderPaid($order));
     }
+}
 }
