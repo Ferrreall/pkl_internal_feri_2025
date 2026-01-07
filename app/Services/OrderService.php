@@ -13,88 +13,69 @@ class OrderService
 {
     /**
      * Membuat Order baru dari Keranjang belanja.
-     *
-     * ALUR PROSES (TRANSACTION):
-     * 1. Hitung total & Validasi Stok terakhir
-     * 2. Buat Record Order (Header)
-     * 3. Pindahkan Cart Items ke Order Items (Detail)
-     * 4. Kurangi Stok Produk (Atomic Decrement)
-     * 5. Hapus Keranjang
+     * Sudah mendukung Harga Diskon dari tabel Cart Items.
      */
-   public function createOrder(User $user, array $shippingData): Order
-{
-    // 1. Ambil Keranjang User secara manual agar PASTI dapat data terbaru
-    $cart = \App\Models\Cart::where('user_id', $user->id)
-                ->with('items.product')
-                ->first();
+    public function createOrder(User $user, array $shippingData): Order
+    {
+        // 1. Ambil Keranjang User secara manual agar PASTI dapat data terbaru
+        // Kita eager load 'items.product' untuk keperluan validasi stok & nama produk
+        $cart = \App\Models\Cart::where('user_id', $user->id)
+                    ->with('items.product')
+                    ->first();
 
-    // Gunakan count() untuk pengecekan yang lebih akurat pada database result
-    if (!$cart || $cart->items->count() === 0) {
-        throw new \Exception("Keranjang belanja kosong.");
-    }
-        // ==================== DATABASE TRANSACTION START ====================
-        // Kita menggunakan DB::transaction untuk membungkus semua proses.
-        // Jika ada 1 error saja (misal stok kurang saat mau decrement),
-        // maka SEMUA query yang sudah jalan akan dibatalkan (Rollback).
-        // Order tidak akan terbentuk setengah-setengah.
+        // Validasi awal sebelum masuk transaksi
+        if (!$cart || $cart->items->count() === 0) {
+            throw new \Exception("Keranjang belanja kosong.");
+        }
+
         return DB::transaction(function () use ($user, $cart, $shippingData) {
 
-            // A. VALIDASI STOK & HITUNG TOTAL
+            // A. VALIDASI STOK & HITUNG TOTAL BERDASARKAN HARGA DISKON
             $totalAmount = 0;
             foreach ($cart->items as $item) {
-                // Penting: Cek stok lagi sesaat sebelum memastikan order.
-                // Mencegah "Race Condition" jika ada orang lain yang beli barang terakhir detik yang sama.
+                // Validasi Stok
                 if ($item->quantity > $item->product->stock) {
                     throw new \Exception("Stok produk {$item->product->name} tidak mencukupi.");
                 }
-                $totalAmount += $item->product->price * $item->quantity;
+                
+                // FIX: Gunakan $item->price (Harga Diskon di Cart), bukan $item->product->price
+                $totalAmount += $item->price * $item->quantity;
             }
 
             // B. BUAT HEADER ORDER
             $order = Order::create([
                 'user_id' => $user->id,
-                // Generate Order Number Unik. Contoh: ORD-X7Y8Z9A1B2
                 'order_number' => 'ORD-' . strtoupper(Str::random(10)),
                 'status' => 'pending',
                 'payment_status' => 'unpaid',
                 'shipping_name' => $shippingData['name'],
                 'shipping_address' => $shippingData['address'],
                 'shipping_phone' => $shippingData['phone'],
-                'total_amount' => $totalAmount,
+                'total_amount' => $totalAmount, // Sudah harga diskon
             ]);
 
-            // C. PINDAHKAN ITEMS
+            // C. PINDAHKAN ITEMS (Snapshot Harga Diskon)
             foreach ($cart->items as $item) {
-                // Buat Order Item
                 $order->items()->create([
                     'product_id' => $item->product_id,
-
-                    // SNAPSHOT DATA (PENTING!)
-                    // Kita simpan nama & harga barang SAAT INI ke tabel order_items.
-                    // Tujuannya: Jika besok admin ubah harga/nama produk,
-                    // data di historical order user TIDAK IKUT BERUBAH.
                     'product_name' => $item->product->name,
-                    'price' => $item->product->price,
-
+                    // FIX: Simpan harga diskon ke riwayat pesanan
+                    'price' => $item->price, 
                     'quantity' => $item->quantity,
-                    'subtotal' => $item->product->price * $item->quantity,
+                    'subtotal' => $item->price * $item->quantity,
                 ]);
 
                 // D. KURANGI STOK (ATOMIC)
-                // decrement() menjalankan query: UPDATE products SET stock = stock - X
-                // Ini thread-safe di level database.
                 $item->product->decrement('stock', $item->quantity);
             }
 
             // E. BERSIHKAN KERANJANG
-            // Hapus semua item di keranjang user karena sudah jadi order.
+            // Agar tidak error "pending" seperti dulu, kita pastikan data item dihapus
+            // dan total_price di tabel carts di-reset jadi 0.
             $cart->items()->delete();
-
-            // Opsional: Hapus object cart-nya juga jika ingin reset session total
-            // $cart->delete();
+            $cart->update(['total_price' => 0]);
 
             return $order;
         });
-        // ==================== DATABASE TRANSACTION END ====================
     }
 }

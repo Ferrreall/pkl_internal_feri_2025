@@ -1,6 +1,6 @@
 {{-- ================================================
      FILE: resources/views/cart/index.blade.php
-     FUNGSI: Halaman keranjang belanja (Fixed Subtotal)
+     FUNGSI: Halaman keranjang belanja (Fixed Total 0)
      ================================================ --}}
 
 @extends('layouts.app')
@@ -15,7 +15,13 @@
     </h2>
 
     @if($cart && $cart->items->count())
-        @php $grandTotal = 0; @endphp {{-- Inisialisasi Total Akhir --}}
+        {{-- Logika Fix: Jika total_price di DB masih 0, kita hitung manual dari items --}}
+        @php 
+            $calculatedTotal = $cart->items->sum(function($item) {
+                return $item->price * $item->quantity;
+            });
+            $grandTotal = $cart->total_price > 0 ? $cart->total_price : $calculatedTotal;
+        @endphp 
         
         <div class="row">
             {{-- Cart Items --}}
@@ -35,9 +41,7 @@
                             <tbody>
                                 @foreach($cart->items as $item)
                                     @php 
-                                        // Hitung subtotal secara manual: Harga x Jumlah
-                                        $itemSubtotal = $item->product->price * $item->quantity;
-                                        $grandTotal += $itemSubtotal;
+                                        $itemSubtotal = $item->price * $item->quantity;
                                     @endphp
                                     <tr>
                                         <td>
@@ -58,7 +62,16 @@
                                             </div>
                                         </td>
                                         <td class="text-center align-middle">
-                                            Rp {{ number_format($item->product->price, 0, ',', '.') }}
+                                            {{-- Harga Diskon --}}
+                                            <div class="fw-bold text-primary">
+                                                Rp {{ number_format($item->price, 0, ',', '.') }}
+                                            </div>
+                                            {{-- Harga Coret --}}
+                                            @if($item->price < $item->product->price)
+                                                <div class="text-muted small text-decoration-line-through">
+                                                    Rp {{ number_format($item->product->price, 0, ',', '.') }}
+                                                </div>
+                                            @endif
                                         </td>
                                         <td class="text-center align-middle">
                                             <form action="{{ route('cart.update', $item->id) }}" method="POST"
@@ -74,7 +87,6 @@
                                             </form>
                                         </td>
                                         <td class="text-end align-middle fw-bold">
-                                            {{-- Tampilkan hasil hitungan manual --}}
                                             Rp {{ number_format($itemSubtotal, 0, ',', '.') }}
                                         </td>
                                         <td class="align-middle">
@@ -97,26 +109,26 @@
 
             {{-- Order Summary --}}
             <div class="col-lg-4">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-white">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white py-3">
                         <h5 class="mb-0">Ringkasan Belanja</h5>
                     </div>
                     <div class="card-body">
-                        <div class="d-flex justify-content-between mb-2" style="color: #4C80C0">
-                            <span>Total Harga ({{ $cart->items->sum('quantity') }} barang)</span>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Total Harga ({{ $cart->items->sum('quantity') }} barang)</span>
                             <span>Rp {{ number_format($grandTotal, 0, ',', '.') }}</span>
                         </div>
-                        <hr>
-                        <div class="d-flex justify-content-between mb-3">
-                            <span class="fw-bold">Total</span>
-                            <span class="fw-bold fs-5" style="color: #4C80C0">
+                        <hr class="my-3">
+                        <div class="d-flex justify-content-between mb-4">
+                            <span class="fw-bold">Total Tagihan</span>
+                            <span class="fw-bold fs-5 text-primary">
                                 Rp {{ number_format($grandTotal, 0, ',', '.') }}
                             </span>
                         </div>
-                        <a href="{{ route('checkout.index') }}" class="btn btn-primary w-100 btn-lg">
+                        <a href="{{ route('checkout.index') }}" class="btn btn-primary w-100 btn-lg shadow-sm">
                             <i class="bi bi-credit-card me-2"></i>Checkout
                         </a>
-                        <a href="{{ route('catalog.index') }}" class="btn btn-outline-secondary w-100 mt-2">
+                        <a href="{{ route('catalog.index') }}" class="btn btn-light w-100 mt-2">
                             <i class="bi bi-arrow-left me-2"></i>Lanjut Belanja
                         </a>
                     </div>
@@ -125,11 +137,11 @@
         </div>
     @else
         {{-- Empty Cart --}}
-        <div class="text-center py-5">
+        <div class="text-center py-5 shadow-sm bg-white rounded">
             <i class="bi bi-cart-x display-1 text-muted"></i>
             <h4 class="mt-3">Keranjang Kosong</h4>
-            <p class="text-muted">Belum ada produk di keranjang belanja kamu</p>
-            <a href="{{ route('catalog.index') }}" class="btn btn-primary">
+            <p class="text-muted">Ayo cari produk impianmu sekarang!</p>
+            <a href="{{ route('catalog.index') }}" class="btn btn-primary px-4">
                 <i class="bi bi-bag me-2"></i>Mulai Belanja
             </a>
         </div>

@@ -14,7 +14,7 @@
                             <tr>
                                 <th class="ps-4">Nomor Pesanan</th>
                                 <th>Tanggal</th>
-                                <th>Total</th>
+                                <th>Total Pembayaran</th> {{-- Label lebih jelas --}}
                                 <th>Status</th>
                                 <th class="text-center">Aksi</th>
                             </tr>
@@ -24,26 +24,24 @@
                                 <tr>
                                     <td class="ps-4 fw-bold text-primary">#{{ $order->order_number }}</td>
                                     <td>{{ $order->created_at->format('d M Y') }}</td>
-                                    <td>Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
+                                    {{-- Menampilkan Total Amount yang sudah diskon --}}
+                                    <td class="fw-bold text-dark">
+                                        Rp {{ number_format($order->total_amount, 0, ',', '.') }}
+                                    </td>
                                     <td>
-                                        <span
-                                            class="badge rounded-pill px-3 py-2
+                                        <span class="badge rounded-pill px-3 py-2
                                             @if ($order->status == 'pending') bg-warning text-dark 
-                                            @elseif($order->status == 'shipped') 
-                                                bg-info {{-- Warna Biru Muda --}}
-                                            @elseif($order->status == 'delivered') 
-                                                bg-success {{-- Warna Hijau --}}
-                                            @elseif($order->status == 'cancelled') 
-                                                bg-danger {{-- Warna Merah --}}
-                                            @else 
-                                                bg-secondary @endif">
+                                            @elseif($order->status == 'shipped' || $order->status == 'success') bg-info 
+                                            @elseif($order->status == 'delivered') bg-success 
+                                            @elseif($order->status == 'cancelled') bg-danger 
+                                            @else bg-secondary @endif">
                                             {{ strtoupper($order->status) }}
                                         </span>
                                     </td>
                                     <td class="text-center">
                                         <a href="{{ route('orders.show', $order) }}"
                                             class="btn btn-sm btn-outline-primary px-3">
-                                            Detail
+                                            Detail Pesanan
                                         </a>
                                     </td>
                                 </tr>

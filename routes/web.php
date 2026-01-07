@@ -8,6 +8,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Admin\DashboardController;
+use app\Http\Middleware\VerifyCsrfToken;
 use App\Http\Controllers\Admin\AdminProductController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\WishlistController;
@@ -16,8 +17,15 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\MidtransNotificationController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\ReportController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
+
+// ================================================
+// MIDTRANS WEBHOOK (Taruh di paling atas agar aman)
+// ================================================
+Route::post('/midtrans/notification', [MidtransNotificationController::class, 'handle'])
+    ->name('midtrans.notification');
 
 // ================================================
 // HALAMAN PUBLIK (Tanpa Login)
@@ -52,7 +60,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 
-    // Pembayaran
+    // Pembayaran (Sudah dirapikan agar tidak 404/Bentrok)
+    Route::get('/orders/{order}/snap-token', [PaymentController::class, 'getSnapToken'])->name('orders.pay.token');
     Route::get('/orders/{order}/pay', [PaymentController::class, 'show'])->name('orders.pay');
     Route::get('/orders/{order}/success', [PaymentController::class, 'success'])->name('orders.success');
     Route::get('/orders/{order}/pending', [PaymentController::class, 'pending'])->name('orders.pending');
@@ -70,24 +79,15 @@ Route::middleware('auth')->group(function () {
 // HALAMAN ADMIN (Auth + Role Admin)
 // ================================================
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-
-    // CRUD Produk & Kategori
     Route::resource('products', AdminProductController::class);
     Route::resource('categories', AdminCategoryController::class)->except(['show']);
-
-    // Manajemen Pesanan
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
-    // Sinkronisasi nama route dengan form di detail pesanan
     Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
+    Route::get('/reports/sales', [ReportController::class, 'sales'])->name('reports.sales');
+    Route::get('/reports/sales/export', [ReportController::class, 'exportSales'])->name('reports.export-sales');
 });
-
-// ================================================
-// MIDTRANS WEBHOOK (Public Access)
-// ================================================
-Route::post('midtrans/notification', [MidtransNotificationController::class, 'handle'])->name('midtrans.notification');
 
 // ================================================
 // AUTH & VERIFIKASI EMAIL

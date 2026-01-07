@@ -82,41 +82,36 @@
 
                     <li class="nav-item">
                         <a href="{{ route('admin.orders.index') }}"
-                            class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
-                            <i class="bi bi-receipt me-2"></i> Pesanan
-                            {{-- Logic PHP di View ini hanya untuk contoh.
-                                 Best Practice: Gunakan View Composer atau inject variable dari Controller.
-                                 Jangan query database langsung di Blade view di production app! --}}
+                            class="nav-link d-flex align-items-center justify-content-between {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
+                            <span><i class="bi bi-receipt me-2"></i> Pesanan</span>
                             @php
-                                // Kita hapus pengecekan payment_status karena kolomnya tidak ada di database kamu
                                 $pendingCount = \App\Models\Order::where('status', 'pending')->count();
                             @endphp
                             @if ($pendingCount > 0)
-                                <span class="badge bg-warning text-dark ms-auto">{{ $pendingCount }}</span>
+                                <span class="badge bg-warning text-dark">{{ $pendingCount }}</span>
                             @endif
-                        </ 
+                        </a> {{-- FIX: Tag penutup link yang tadinya rusak --}}
                     </li>
 
                     <li class="nav-item">
-                        {{-- <a href="{{ route('admin.users.index') }}"
-                            class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                        <a href="#" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                             <i class="bi bi-people me-2"></i> Pengguna
-                        </a> --}}
+                        </a>
                     </li>
 
+                    {{-- Header Laporan dengan warna yang lebih kontras --}}
                     <li class="nav-item mt-3">
-                        <span class="nav-link text-muted small text-uppercase">Laporan</span>
+                        <span class="nav-link small text-uppercase fw-bold"
+                            style="color: rgba(255, 255, 255, 0.5); letter-spacing: 1px;">Laporan</span>
                     </li>
 
                     <li class="nav-item">
-                        {{-- <a href="{{ route('admin.reports.sales') }}"
-                            class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.reports.sales') }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
                             <i class="bi bi-graph-up me-2"></i> Laporan Penjualan
-                        </a> --}}
+                        </a>
                     </li>
                 </ul>
             </nav>
-
             {{-- User Info --}}
             <div class="p-3 border-top border-secondary">
                 <div class="d-flex align-items-center text-white">

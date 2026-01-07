@@ -6,6 +6,7 @@ use App\Models\Order;
 use Illuminate\Http\Request;
 use Midtrans\Config; 
 use Midtrans\Snap;   
+use Midtrans\Transaction;
 
 class OrderController extends Controller
 {
@@ -17,45 +18,35 @@ class OrderController extends Controller
         Config::$is3ds = config('midtrans.is_3ds');
     }
 
-    // Ambil dari MODUL: Untuk menampilkan daftar semua pesanan user
     public function index()
     {
-        $orders = auth()->user()->orders()
-            ->with(['items.product']) 
-            ->latest() 
-            ->paginate(10);
-
+        $orders = auth()->user()->orders()->with(['items.product'])->latest()->paginate(10);
         return view('orders.index', compact('orders'));
     }
 
-    // GABUNGAN: Logika Modul + Logika Midtrans kita
-   public function show(Order $order)
+    public function show(Order $order)
     {
-        // 1. Security Check
-        if ($order->user_id !== auth()->id()) {
-            abort(403, 'Anda tidak memiliki akses ke pesanan ini.');
-        }
+        if ($order->user_id !== auth()->id()) { abort(403); }
 
-        // ---------------------------------------------------------
-        // KODE "JALAN PINTAS" (Hapus bagian ini kalau sudah selesai demo/sidang)
-        // Kalau lo buka halaman ini, Laravel bakal paksa status jadi PAID & kirim email.
+        // SYNC STATUS MIDTRANS
         if ($order->payment_status !== 'paid') {
-            $order->update(['payment_status' => 'paid']);
-            
-            // Memicu Event yang bakal ngirim email ke Mailtrap
-            event(new \App\Events\OrderPaidEvent($order));
+            try {
+                $status = Transaction::status($order->order_number); 
+                if ($status->transaction_status == 'settlement' || $status->transaction_status == 'capture') {
+                    $order->update(['payment_status' => 'paid', 'status' => 'processing']);
+                }
+            } catch (\Exception $e) {}
         }
-        // ---------------------------------------------------------
 
         $order->load(['items.product']);
-
-        // Kita biarkan logika Midtrans tetap ada di bawah biar kodingan lo nggak rusak
         $snapToken = $order->snap_token;
+
         if ($order->status === 'pending' && !$snapToken) {
             $params = [
                 'transaction_details' => [
-                    'order_id' => $order->order_number . '-' . time(), 
-                    'gross_amount' => (int) $order->total_amount,
+                    'order_id' => $order->order_number, 
+                    // total_amount di sini sudah harus hasil kalkulasi harga diskon
+                    'gross_amount' => (int) $order->total_amount, 
                 ],
                 'customer_details' => [
                     'first_name' => auth()->user()->name,
@@ -68,7 +59,7 @@ class OrderController extends Controller
                 $snapToken = Snap::getSnapToken($params);
                 $order->update(['snap_token' => $snapToken]);
             } catch (\Exception $e) {
-                // Biarkan saja, karena kita sudah "paksa" paid di atas
+                \Log::error("Midtrans Error: " . $e->getMessage());
             }
         }
 

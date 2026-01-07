@@ -6,7 +6,7 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <h2 class="mb-4">Profil Saya</h2>
+            <h2 class="mb-4">Profil Saya</h2>x
             {{-- 1. Avatar Information --}}
             <div class="card mb-4">
                 <div class="card-header bg-white fw-bold">Foto Profil</div>

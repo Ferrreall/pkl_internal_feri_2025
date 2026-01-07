@@ -78,7 +78,7 @@
                                 {{ $product->formatted_original_price }}
                             </div>
                         @endif
-                        <div class="h3 fw-bold mb-0" style="color: #84124F;">
+                        <div class="h3 fw-bold mb-0" style="color: #4C80C0;">
                             {{ $product->formatted_price }}
                         </div>
                     </div>

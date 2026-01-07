@@ -5,12 +5,11 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow-sm border-0" style="border-radius: 15px;">
-                {{-- Header Detail Pesanan --}}
                 <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
                     <h4 class="mb-0 fw-bold text-dark">Detail Pesanan #{{ $order->order_number }}</h4>
                     <span class="badge rounded-pill 
                         @if($order->status == 'pending') bg-warning text-dark 
-                        @elseif($order->status == 'success') bg-success 
+                        @elseif($order->status == 'success' || $order->status == 'delivered') bg-success 
                         @else bg-secondary @endif px-3 py-2">
                         {{ strtoupper($order->status) }}
                     </span>
@@ -33,10 +32,13 @@
                             <tbody>
                                 @foreach($order->items as $item)
                                 <tr>
-                                    <td>{{ $item->product_name }}</td>
+                                    <td>
+                                        <span class="fw-medium">{{ $item->product_name }}</span>
+                                    </td>
                                     <td class="text-center">{{ $item->quantity }}</td>
+                                    {{-- Harga di sini otomatis harga saat beli (sudah diskon) --}}
                                     <td class="text-end">Rp {{ number_format($item->price, 0, ',', '.') }}</td>
-                                    <td class="text-end fw-bold">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                                    <td class="text-end fw-bold">Rp {{ number_format($item->price * $item->quantity, 0, ',', '.') }}</td>
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -56,20 +58,20 @@
                     </div>
 
                     {{-- Alamat Pengiriman --}}
-                    <div class="bg-light p-3 rounded-3 mb-4">
+                    <div class="bg-light p-3 rounded-3 mb-4 border-start border-primary border-4">
                         <h6 class="fw-bold mb-2">Alamat Pengiriman</h6>
-                        <p class="mb-1 fw-semibold">{{ $order->shipping_name }}</p>
-                        <p class="mb-1 text-muted">{{ $order->shipping_phone }}</p>
-                        <p class="mb-0 text-muted">{{ $order->shipping_address }}</p>
+                        <p class="mb-1 fw-semibold text-dark">{{ $order->shipping_name }}</p>
+                        <p class="mb-1 text-muted"><i class="bi bi-whatsapp me-2"></i>{{ $order->shipping_phone }}</p>
+                        <p class="mb-0 text-muted"><i class="bi bi-geo-alt me-2"></i>{{ $order->shipping_address }}</p>
                     </div>
 
                     {{-- Tombol Aksi --}}
                     <div class="d-grid gap-2 text-center">
                         @if($order->status === 'pending' && isset($snapToken))
-                            <div class="alert alert-info border-0 small mb-3">
-                                Silakan selesaikan pembayaran agar pesanan segera diproses.
+                            <div class="alert alert-warning border-0 small mb-3 shadow-sm">
+                                <i class="bi bi-info-circle me-2"></i>Silakan selesaikan pembayaran Anda melalui tombol di bawah ini.
                             </div>
-                            <button id="pay-button" class="btn btn-primary btn-lg shadow-sm py-3 fw-bold" style="border-radius: 10px;">
+                            <button id="pay-button" class="btn btn-primary btn-lg shadow-sm py-3 fw-bold" style="border-radius: 10px; background: linear-gradient(135deg, #4C80C0 0%, #4e98f4 100%); border:none;">
                                 💳 Bayar Sekarang
                             </button>
                         @endif

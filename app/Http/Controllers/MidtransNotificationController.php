@@ -170,25 +170,30 @@ class MidtransNotificationController extends Controller
      * Handle pembayaran sukses.
      */
     protected function handleSuccess(Order $order, ?Payment $payment): void
-    {
-        Log::info("Payment SUCCESS for Order: {$order->order_number}");
+{
+    Log::info("Payment SUCCESS for Order: {$order->order_number}");
 
-        // Update Order
-        $order->update([
-            'status' => 'processing', // Siap diproses/dikirim
-        ]);
-
-        // Update Payment
-        if ($payment) {
-            $payment->update([
-                'status'  => 'success',
-                'paid_at' => now(),
-            ]);
+    // JIKA STATUS SEBELUMNYA MASIH PENDING, BARU KURANGI STOK
+    if ($order->status === 'pending') {
+        foreach ($order->items as $item) {
+            // PRODUK DIKURANGI DI SINI
+            $item->product->decrement('stock', $item->quantity);
         }
-
-        // TODO: Kirim email konfirmasi pembayaran
-        // event(new PaymentSuccessful($order));
     }
+
+    $order->update([
+        'status' => 'processing',
+    ]);
+
+    if ($payment) {
+        $payment->update([
+            'status'  => 'success',
+            'paid_at' => now(),
+        ]);
+    }
+    
+    event(new OrderPaidEvent($order));
+}
 
     /**
      * Handle pembayaran pending.

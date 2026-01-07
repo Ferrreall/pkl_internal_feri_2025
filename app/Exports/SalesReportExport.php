@@ -8,9 +8,10 @@ use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize; // Tambahan agar kolom otomatis lebar
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class SalesReportExport implements FromQuery, WithHeadings, WithMapping, WithStyles
+class SalesReportExport implements FromQuery, WithHeadings, WithMapping, WithStyles, ShouldAutoSize
 {
     use Exportable;
 
@@ -50,29 +51,30 @@ class SalesReportExport implements FromQuery, WithHeadings, WithMapping, WithSty
 
     /**
      * 3. Mapping Data per Baris
-     * Mengatur data apa yang masuk ke kolom mana.
      */
     public function map($order): array
     {
         return [
             $order->order_number,
-            $order->created_at->format('d/m/Y H:i'), // Format tanggal Excel friendly
-            $order->user->name,
-            $order->user->email,
+            $order->created_at->format('d/m/Y H:i'),
+            // Gunakan null coalescing (??) agar tidak error jika user tidak ditemukan
+            $order->user->name ?? $order->shipping_name ?? 'Pelanggan Terhapus',
+            $order->user->email ?? '-',
             $order->items->sum('quantity'),
-            $order->total_amount, // Biarkan angka murni agar bisa dijumlah di Excel
+            // Total amount ini sudah harga diskon karena kita sudah perbaiki di OrderService tadi
+            $order->total_amount, 
             ucfirst($order->status),
         ];
     }
 
     /**
-     * 4. Styling (Opsional: Bold Header)
+     * 4. Styling
      */
     public function styles(Worksheet $sheet)
     {
+        // Menambahkan border tipis untuk seluruh data (opsional tapi bagus)
         return [
-            // Style baris pertama (Header) jadi Bold
-            1 => ['font' => ['bold' => true]],
+            1 => ['font' => ['bold' => true, 'size' => 12]],
         ];
     }
 }

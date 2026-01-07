@@ -5,27 +5,30 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Auth\Events\Login;
 use App\Listeners\MergeCartListener;
+// Import Event dan Listener barunya
+use App\Events\OrderPaidEvent;
+use App\Listeners\SendOrderConfirmationEmail; 
 
 class EventServiceProvider extends ServiceProvider
 {
-
+    /**
+     * The event to listener mappings for the application.
+     */
     protected $listen = [
         Login::class => [
             MergeCartListener::class,
         ],
+        // TAMBAHKAN INI DI BAWAHNYA
+        OrderPaidEvent::class => [
+            SendOrderConfirmationEmail::class,
+        ],
     ];
 
-    /**
-     * Register services.
-     */
     public function register(): void
     {
         //
     }
 
-    /**
-     * Bootstrap services.
-     */
     public function boot(): void
     {
         //
