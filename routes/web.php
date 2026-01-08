@@ -8,7 +8,6 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Admin\DashboardController;
-use app\Http\Middleware\VerifyCsrfToken;
 use App\Http\Controllers\Admin\AdminProductController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\WishlistController;
@@ -44,6 +43,7 @@ Route::get('/auth/google/callback', [GoogleController::class, 'handleGoogleCallb
 Route::middleware('auth')->group(function () {
     // Keranjang Belanja
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    // ... route cart lainnya ...
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
     Route::patch('/cart/{item}', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/cart/{item}', [CartController::class, 'remove'])->name('cart.remove');
@@ -60,7 +60,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 
-    // Pembayaran (Sudah dirapikan agar tidak 404/Bentrok)
+    // Pembayaran
     Route::get('/orders/{order}/snap-token', [PaymentController::class, 'getSnapToken'])->name('orders.pay.token');
     Route::get('/orders/{order}/pay', [PaymentController::class, 'show'])->name('orders.pay');
     Route::get('/orders/{order}/success', [PaymentController::class, 'success'])->name('orders.success');
@@ -80,7 +80,11 @@ Route::middleware('auth')->group(function () {
 // ================================================
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // Kembalikan ke standar (Hapus .restore dan .withTrashed jika ingin benar-benar hilang)
     Route::resource('products', AdminProductController::class);
+    
+    Route::resource('categories', AdminCategoryController::class)->except(['show']);
     Route::resource('categories', AdminCategoryController::class)->except(['show']);
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');

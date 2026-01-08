@@ -1,17 +1,83 @@
-{{-- ================================================
-     FILE: resources/views/catalog/show.blade.php
-     FUNGSI: Halaman detail produk
-     ================================================ --}}
-
 @extends('layouts.app')
 
 @section('title', $product->name)
 
 @section('content')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+<style>
+    /* 1. Perbaikan Breadcrumb sesuai request */
+    .breadcrumb-item a {
+        color: #6c757d !important; 
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    .breadcrumb-item a:hover {
+        color: #000 !important;
+    }
+    .breadcrumb-item.active {
+        color: #000 !important;
+        font-weight: 600;
+    }
+    .breadcrumb-divider {
+        color: #6c757d;
+    }
+
+    /* 2. Styling Slider */
+    .main-slider {
+        height: 450px;
+        background: #fff;
+        border-radius: 15px;
+        overflow: hidden;
+        border: 1px solid #f0f0f0;
+    }
+    .main-slider img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 20px;
+    }
+    .thumb-slider {
+        height: 90px;
+        margin-top: 15px;
+    }
+    .thumb-slider .swiper-slide {
+        width: 20%;
+        height: 100%;
+        opacity: 0.5;
+        cursor: pointer;
+        transition: opacity 0.3s;
+    }
+    .thumb-slider .swiper-slide-thumb-active { opacity: 1; }
+    .thumb-slider img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 2px solid transparent;
+    }
+    .thumb-slider .swiper-slide-thumb-active img { border-color: #4C80C0; }
+
+    /* Custom Arrow Swiper */
+    .swiper-button-next, .swiper-button-prev {
+        color: #000 !important;
+        background: rgba(255,255,255,0.8);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    
+    .swiper-button-next::after, .swiper-button-prev::after {
+        font-size: 18px;
+        font-weight: bold;
+    }
+</style>
+
 <div class="container py-4">
-    {{-- Breadcrumb --}}
+    {{-- Breadcrumb Modern --}}
     <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
+        <ol class="breadcrumb bg-transparent p-0">
             <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
             <li class="breadcrumb-item"><a href="{{ route('catalog.index') }}">Katalog</a></li>
             <li class="breadcrumb-item">
@@ -19,139 +85,114 @@
                     {{ $product->category->name }}
                 </a>
             </li>
-            <li class="breadcrumb-item active">{{ Str::limit($product->name, 30) }}</li>
+            <li class="breadcrumb-item active" aria-current="page">{{ $product->name }}</li>
         </ol>
     </nav>
 
-    <div class="row">
-        {{-- Product Images --}}
-        <div class="col-lg-6 mb-4">
-            <div class="card border-0 shadow-sm">
-                {{-- Main Image --}}
-                <div class="position-relative">
-                    <img src="{{ $product->image_url }}"
-                         id="main-image"
-                         class="card-img-top"
-                         alt="{{ $product->name }}"
-                         style="height: 400px; object-fit: contain; background: #f8f9fa;">
-
-                    @if($product->has_discount)
-                        <span class="badge bg-danger position-absolute top-0 start-0 m-3 fs-6">
+    <div class="row g-5">
+        {{-- Left Side: Product Images --}}
+        <div class="col-lg-6">
+            <div class="swiper main-slider shadow-sm">
+                <div class="swiper-wrapper">
+                    @foreach($product->images as $image)
+                        <div class="swiper-slide">
+                            <img src="{{ asset('storage/' . $image->image_path) }}" alt="{{ $product->name }}">
+                        </div>
+                    @endforeach
+                </div>
+                
+                @if($product->has_discount)
+                    <div class="position-absolute top-0 start-0 m-3 z-3">
+                        <span class="badge bg-danger px-3 py-2 rounded-3 shadow-sm">
                             -{{ $product->discount_percentage }}%
+                        </span>
+                    </div>
+                @endif
+                
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
+
+            @if($product->images->count() > 1)
+                <div class="swiper thumb-slider">
+                    <div class="swiper-wrapper">
+                        @foreach($product->images as $image)
+                            <div class="swiper-slide">
+                                <img src="{{ asset('storage/' . $image->image_path) }}">
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+        </div>
+
+        {{-- Right Side: Product Details --}}
+        <div class="col-lg-6">
+            <div class="ps-lg-3">
+                <span class="badge bg-secondary bg-opacity-10 text-dark mb-2 px-3 py-2 rounded-pill fw-medium">
+                    {{ $product->category->name }}
+                </span>
+                
+                <h1 class="display-6 fw-bold mb-3 text-dark">{{ $product->name }}</h1>
+
+                <div class="mb-4">
+                    @if($product->has_discount)
+                        <span class="text-muted text-decoration-line-through fs-5 me-2">
+                            {{ $product->formatted_original_price }}
+                        </span>
+                    @endif
+                    <span class="h2 fw-bold text-primary mb-0 d-block d-sm-inline">
+                        {{ $product->formatted_price }}
+                    </span>
+                </div>
+
+                <div class="mb-4">
+                    @if($product->stock > 0)
+                        <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">
+                            <i class="bi bi-check-circle-fill me-1"></i> Stok Tersedia
+                        </span>
+                    @else
+                        <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">
+                            <i class="bi bi-x-circle-fill me-1"></i> Stok Habis
                         </span>
                     @endif
                 </div>
 
-                {{-- Thumbnail Gallery --}}
-                @if($product->images->count() > 1)
-                    <div class="card-body">
-                        <div class="d-flex gap-2 overflow-auto">
-                            @foreach($product->images as $image)
-                                <img src="{{ asset('storage/' . $image->image_path) }}"
-                                     class="rounded border cursor-pointer"
-                                     style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;"
-                                     onclick="document.getElementById('main-image').src = this.src">
-                            @endforeach
+                <form action="{{ route('cart.add') }}" method="POST" class="mb-3">
+                    @csrf
+                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                    
+                    <div class="d-flex flex-wrap gap-3 align-items-center">
+                        <div class="input-group shadow-sm" style="width: 130px; height: 50px;">
+                            <button class="btn btn-outline-light border text-dark fw-bold" type="button" onclick="decrementQty()">-</button>
+                            <input type="number" name="quantity" id="quantity" class="form-control text-center border-start-0 border-end-0 fw-bold" value="1" min="1" max="{{ $product->stock }}">
+                            <button class="btn btn-outline-light border text-dark fw-bold" type="button" onclick="incrementQty()">+</button>
                         </div>
-                    </div>
-                @endif
-            </div>
-        </div>
-
-        {{-- Product Info --}}
-        <div class="col-lg-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    {{-- Category --}}
-                    <a href="{{ route('catalog.index', ['category' => $product->category->slug]) }}"
-                       class="badge bg-light text-dark text-decoration-none mb-2">
-                        {{ $product->category->name }}
-                    </a>
-
-                    {{-- Title --}}
-                    <h2 class="mb-3">{{ $product->name }}</h2>
-
-                    {{-- Price --}}
-                    <div class="mb-4">
-                        @if($product->has_discount)
-                            <div class="text-muted text-decoration-line-through">
-                                {{ $product->formatted_original_price }}
-                            </div>
-                        @endif
-                        <div class="h3 fw-bold mb-0" style="color: #4C80C0;">
-                            {{ $product->formatted_price }}
-                        </div>
-                    </div>
-
-                    {{-- Stock Status --}}
-                    <div class="mb-4">
-                        @if($product->stock > 10)
-                            <span class="badge bg-success">
-                                <i class="bi bi-check-circle me-1"></i> Stok Tersedia
-                            </span>
-                        @elseif($product->stock > 0)
-                            <span class="badge bg-warning text-dark">
-                                <i class="bi bi-exclamation-triangle me-1"></i> Stok Tinggal {{ $product->stock }}
-                            </span>
-                        @else
-                            <span class="badge bg-danger">
-                                <i class="bi bi-x-circle me-1"></i> Stok Habis
-                            </span>
-                        @endif
-                    </div>
-
-                    {{-- Add to Cart Form --}}
-                    <form action="{{ route('cart.add') }}" method="POST" class="mb-4">
-                        @csrf
-                        <input type="hidden" name="product_id" value="{{ $product->id }}">
-
-                        <div class="row g-3 align-items-end">
-                            <div class="col-auto">
-                                <label class="form-label">Jumlah</label>
-                                <div class="input-group" style="width: 140px;">
-                                    <button type="button" class="btn btn-outline-secondary"
-                                            onclick="decrementQty()">-</button>
-                                    <input type="number" name="quantity" id="quantity"
-                                           value="1" min="1" max="{{ $product->stock }}"
-                                           class="form-control text-center">
-                                    <button type="button" class="btn btn-outline-secondary"
-                                            onclick="incrementQty()">+</button>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <button type="submit" class="btn btn-brand-filled btn-lg w-100"
-                                        @if($product->stock == 0) disabled @endif>
-                                    <i class="bi bi-cart-plus me-2"></i>
-                                    Tambah ke Keranjang
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-
-                    {{-- Wishlist --}}
-                    @auth
-                        <button type="button"
-                                onclick="toggleWishlist({{ $product->id }})"
-                                class="btn btn-outline-danger mb-4 wishlist-btn-{{ $product->id }}">
-                            <i class="bi {{ auth()->user()->hasInWishlist($product) ? 'bi-heart-fill' : 'bi-heart' }} me-2"></i>
-                            {{ auth()->user()->hasInWishlist($product) ? 'Hapus dari Wishlist' : 'Tambah ke Wishlist' }}
+                        
+                        <button type="submit" class="btn btn-primary btn-lg flex-grow-1 fw-bold shadow-sm rounded-3" style="height: 50px;" {{ $product->stock == 0 ? 'disabled' : '' }}>
+                            <i class="bi bi-cart-plus me-2"></i> Tambah ke Keranjang
                         </button>
-                    @endauth
-
-                    <hr>
-
-                    {{-- Product Details --}}
-                    <div class="mb-3">
-                        <h6>Deskripsi</h6>
-                        <p class="text-muted">{!! nl2br(e($product->description)) !!}</p>
                     </div>
+                </form>
 
-                    <div class="row text-muted small">
-                        <div class="col-6 mb-2">
-                            <i class="bi bi-box me-2"></i> Berat: {{ $product->weight }} gram
+                @auth
+                    <button class="btn btn-outline-danger w-100 rounded-3 py-2 mb-4 transition" onclick="toggleWishlist({{ $product->id }})">
+                        <i class="bi {{ auth()->user()->hasInWishlist($product) ? 'bi-heart-fill' : 'bi-heart' }} me-2"></i>
+                        {{ auth()->user()->hasInWishlist($product) ? 'Hapus dari Wishlist' : 'Tambah ke Favorit' }}
+                    </button>
+                @endauth
+
+                <div class="bg-light p-4 rounded-4">
+                    <h5 class="fw-bold mb-3 text-dark">Deskripsi Produk</h5>
+                    <div class="text-muted small lh-lg">
+                        {!! nl2br(e($product->description)) !!}
+                    </div>
+                    <div class="row mt-4 pt-3 border-top border-2 border-white">
+                        <div class="col-6 small">
+                            <i class="bi bi-box-seam text-primary me-2"></i> Berat: {{ $product->weight }} gr
                         </div>
-                        <div class="col-6 mb-2">
-                            <i class="bi bi-tag me-2"></i> SKU: PROD-{{ $product->id }}
+                        <div class="col-6 small text-end">
+                            <i class="bi bi-qr-code text-primary me-2"></i> SKU: PROD-{{ $product->id }}
                         </div>
                     </div>
                 </div>
@@ -161,19 +202,34 @@
 </div>
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
+    const swiperThumbs = new Swiper(".thumb-slider", {
+        spaceBetween: 12,
+        slidesPerView: 4,
+        freeMode: true,
+        watchSlidesProgress: true,
+    });
+
+    const swiperMain = new Swiper(".main-slider", {
+        spaceBetween: 10,
+        grabCursor: true,
+        navigation: {
+            nextEl: ".swiper-button-next",
+            prevEl: ".swiper-button-prev",
+        },
+        thumbs: {
+            swiper: swiperThumbs,
+        },
+    });
+
     function incrementQty() {
-        const input = document.getElementById('quantity');
-        const max = parseInt(input.max);
-        if (parseInt(input.value) < max) {
-            input.value = parseInt(input.value) + 1;
-        }
+        let input = document.getElementById('quantity');
+        if (parseInt(input.value) < parseInt(input.max)) input.value = parseInt(input.value) + 1;
     }
     function decrementQty() {
-        const input = document.getElementById('quantity');
-        if (parseInt(input.value) > 1) {
-            input.value = parseInt(input.value) - 1;
-        }
+        let input = document.getElementById('quantity');
+        if (parseInt(input.value) > 1) input.value = parseInt(input.value) - 1;
     }
 </script>
 @endpush

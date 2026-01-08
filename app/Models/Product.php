@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class Product extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'category_id',
@@ -20,6 +21,7 @@ class Product extends Model
         'description',
         'price',
         'discount_price',
+        'discount_percentage',
         'stock',
         'weight',
         'is_active',
@@ -65,102 +67,58 @@ class Product extends Model
         return $this->hasMany(CartItem::class);
     }
 
-    public function wishlistedBy(): HasMany
-    {
-        return $this->hasMany(Wishlist::class);
-    }
+    // ==================== ACCESSORS ====================
 
-    // ==================== ACCESSORS (LOGIKA HARGA DISKON) ====================
-
-    /**
-     * Accessor: HARGA UTAMA UNTUK TRANSAKSI
-     * Digunakan oleh CartService & OrderController agar harga otomatis diskon.
-     * $product->display_price
-     */
     public function getDisplayPriceAttribute(): float
     {
-        // Jika ada discount_price, harganya di atas 0, dan lebih kecil dari harga asli
         if ($this->discount_price !== null && $this->discount_price > 0 && $this->discount_price < $this->price) {
             return (float) $this->discount_price;
         }
-        
-        // Jika tidak ada diskon, balik ke harga normal
         return (float) $this->price;
     }
 
-    /**
-     * Menampilkan harga dengan format Rp (Contoh: Rp 1.500.000)
-     */
     public function getFormattedPriceAttribute(): string
     {
         return 'Rp ' . number_format($this->display_price, 0, ',', '.');
     }
 
-    /**
-     * Menampilkan harga asli yang dicoret jika sedang diskon
-     */
     public function getFormattedOriginalPriceAttribute(): string
     {
         return 'Rp ' . number_format($this->price, 0, ',', '.');
     }
 
-    /**
-     * Cek apakah produk sedang diskon atau tidak
-     */
     public function getHasDiscountAttribute(): bool
     {
-        return $this->discount_price !== null
-            && $this->discount_price > 0
+        return $this->discount_price !== null 
+            && $this->discount_price > 0 
             && $this->discount_price < $this->price;
     }
 
-    /**
-     * Menghitung persentase diskon
-     */
-    public function getDiscountPercentageAttribute(): int
-    {
-        if (!$this->has_discount) {
-            return 0;
-        }
-
-        $discountValue = $this->price - $this->discount_price;
-        return (int) round(($discountValue / $this->price) * 100);
+    // Tambahkan di dalam class Product
+public function getImageUrlAttribute(): string
+{
+    // Cari yang is_primary dulu
+    $image = $this->images->where('is_primary', true)->first();
+    
+    // Kalau tidak ada primary, ambil gambar apa saja yang pertama tersedia
+    if (!$image) {
+        $image = $this->images->first();
     }
 
-    /**
-     * Logika ambil Gambar (Primary -> First -> Placeholder)
-     */
-    public function getImageUrlAttribute(): string
-    {
-        $image = $this->primaryImage ?? $this->firstImage ?? $this->images->first();
-
-        if ($image) {
-            return $image->image_url;
-        }
-
-        return asset('images/furin.jpg');
+    if ($image) {
+        // Jika di database image_path sudah ada kata 'products/', maka:
+        return asset('storage/' . $image->image_path);
     }
 
-    /**
-     * Label Stok
-     */
-    public function getIsAvailableAttribute(): bool
-    {
-        return $this->is_active && $this->stock > 0;
-    }
+    // Jika benar-benar tidak ada gambar
+    return asset('img/no-image.png');
+}
 
     public function getStockLabelAttribute(): string
     {
         if ($this->stock <= 0) return 'Habis';
         if ($this->stock <= 5) return 'Sisa ' . $this->stock;
         return 'Tersedia';
-    }
-
-    public function getStockBadgeColorAttribute(): string
-    {
-        if ($this->stock <= 0) return 'danger';
-        if ($this->stock <= 5) return 'warning';
-        return 'success';
     }
 
     public function getFormattedWeightAttribute(): string
@@ -171,7 +129,7 @@ class Product extends Model
         return $this->weight . ' gram';
     }
 
-    // ==================== QUERY SCOPES ====================
+    // ==================== QUERY SCOPES (PENYEBAB ERROR) ====================
 
     public function scopeSearch($query, string $keyword)
     {
@@ -181,20 +139,24 @@ class Product extends Model
         });
     }
 
-    public function scopeActive($query) { return $query->where('is_active', true); }
-    public function scopeFeatured($query) { return $query->where('is_featured', true); }
-    public function scopeInStock($query) { return $query->where('stock', '>', 0); }
+    public function scopeActive($query) 
+    { 
+        return $query->where('is_active', true); 
+    }
+
+    public function scopeFeatured($query) 
+    { 
+        return $query->where('is_featured', true); 
+    }
+
+    public function scopeInStock($query) 
+    { 
+        return $query->where('stock', '>', 0); 
+    }
 
     public function scopeAvailable($query)
     {
         return $query->active()->inStock();
-    }
-
-    public function scopeByCategory($query, string $categorySlug)
-    {
-        return $query->whereHas('category', function ($q) use ($categorySlug) {
-            $q->where('slug', $categorySlug);
-        });
     }
 
     public function scopeOnSale($query)
@@ -211,32 +173,9 @@ class Product extends Model
             'price_asc' => $query->orderBy('price', 'asc'),
             'price_desc' => $query->orderBy('price', 'desc'),
             'name_asc' => $query->orderBy('name', 'asc'),
-            'name_desc' => $query->orderBy('name', 'desc'),
             'popular' => $query->withCount('orderItems')->orderByDesc('order_items_count'),
             default => $query->latest(),
         };
-    }
-
-    // ==================== BOOT METHOD ====================
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($product) {
-            if (empty($product->slug)) {
-                $baseSlug = Str::slug($product->name);
-                $slug = $baseSlug;
-                $counter = 1;
-
-                while (static::where('slug', $slug)->exists()) {
-                    $slug = $baseSlug . '-' . $counter;
-                    $counter++;
-                }
-
-                $product->slug = $slug;
-            }
-        });
     }
 
     // ==================== HELPER METHODS ====================

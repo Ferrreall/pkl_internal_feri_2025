@@ -3,6 +3,26 @@
 @section('title', 'Edit Produk')
 
 @section('content')
+@push('scripts')
+<script>
+    const priceInput = document.querySelector('input[name="price"]');
+    const discountInput = document.querySelector('input[name="discount_price"]');
+
+    function calculateDiscount() {
+        const price = parseFloat(priceInput.value) || 0;
+        const discount = parseFloat(discountInput.value) || 0;
+
+        if (price > 0 && discount > 0 && discount < price) {
+            const percent = ((price - discount) / price) * 100;
+            // Tampilkan info ke user (kamu bisa buatkan span di bawah input diskon)
+            console.log("Diskon: " + percent.toFixed(2) + "%");
+        }
+    }
+
+    priceInput.addEventListener('input', calculateDiscount);
+    discountInput.addEventListener('input', calculateDiscount);
+</script>
+@endpush
 <div class="row justify-content-center">
     <div class="col-lg-12">
 
