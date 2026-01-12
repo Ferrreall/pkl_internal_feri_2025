@@ -1,6 +1,6 @@
 {{-- ================================================
      FILE: resources/views/layouts/admin.blade.php
-     FUNGSI: Master layout untuk halaman admin
+     FUNGSI: Master layout Admin - ALL MIGHT THEME
      ================================================ --}}
 
 <!DOCTYPE html>
@@ -11,115 +11,196 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title') - Admin Panel</title>
+    <title>@yield('title') - Admin Panel All Might</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
+        :root {
+            --all-might-blue: #1A237E;
+            --all-might-red: #D32F2F;
+            --all-might-yellow: #FFEB3B;
+            --all-might-gold: #FF8F00;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7fa;
+        }
+
+        /* --- SIDEBAR CUSTOM --- */
         .sidebar {
             min-height: 100vh;
-            background: linear-gradient(180deg, #1e3a5f 0%, #0f172a 100%);
+            background: linear-gradient(180deg, var(--all-might-blue) 0%, #0d1142 100%);
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .sidebar .brand-zone {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-bottom: 2px solid var(--all-might-gold);
+        }
+
+        .brand-text {
+            font-family: 'Bangers', cursive;
+            letter-spacing: 2px;
+            color: var(--all-might-yellow);
+            font-size: 1.5rem;
+            text-shadow: 2px 2px var(--all-might-red);
         }
 
         .sidebar .nav-link {
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.75);
             padding: 12px 20px;
-            border-radius: 8px;
-            margin: 4px 12px;
-            transition: all 0.2s;
+            border-radius: 0 50px 50px 0;
+            margin: 5px 15px 5px 0;
+            transition: all 0.3s;
+            font-weight: 500;
+            border-left: 4px solid transparent;
         }
 
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
+        .sidebar .nav-link:hover {
             background: rgba(255, 255, 255, 0.1);
+            color: var(--all-might-yellow);
+            padding-left: 25px;
+        }
+
+        .sidebar .nav-link.active {
+            background: linear-gradient(90deg, rgba(211, 47, 47, 0.2) 0%, rgba(255, 255, 255, 0.05) 100%);
             color: #fff;
+            border-left: 4px solid var(--all-might-yellow);
         }
 
         .sidebar .nav-link i {
-            width: 24px;
+            font-size: 1.1rem;
+            margin-right: 10px;
+            color: var(--all-might-gold);
+        }
+
+        /* --- TOPBAR --- */
+        .top-navbar {
+            background: #fff;
+            border-bottom: 3px solid var(--all-might-red);
+        }
+
+        .page-title {
+            font-weight: 800;
+            color: var(--all-might-blue);
+            text-transform: uppercase;
+        }
+
+        /* --- CARDS & UI --- */
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .btn-all-might {
+            background-color: var(--all-might-red);
+            color: white;
+            font-weight: bold;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .btn-all-might:hover {
+            background-color: var(--all-might-blue);
+            color: var(--all-might-yellow);
+            transform: translateY(-2px);
+        }
+
+        .user-panel {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            margin: 15px;
+            padding: 12px;
         }
     </style>
     @stack('styles')
 </head>
 
-<body class="bg-light">
+<body>
     <div class="d-flex">
         {{-- Sidebar --}}
-        <div class="sidebar d-flex flex-column" style="width: 260px;">
+        <div class="sidebar d-flex flex-column" style="width: 280px;">
             {{-- Brand --}}
-            <div class="p-3 border-bottom border-secondary">
-                <a href="{{ route('admin.dashboard') }}"
-                    class="text-white text-decoration-none d-flex align-items-center">
-                    <i class="bi bi-shop fs-4 me-2"></i>
-                    <span class="fs-5 fw-bold">Admin Panel</span>
+            <div class="brand-zone">
+                <a href="{{ route('admin.dashboard') }}" class="text-decoration-none d-flex align-items-center">
+                   <img src="{{ asset('images/almait.png') }}" alt="Logo All Might" height="65"
+                class="me-2 logo-pensil">
+                    <span class="brand-text">ADMIN ULTRA!</span>
                 </a>
             </div>
 
             {{-- Navigation --}}
-            <nav class="flex-grow-1 py-3">
+            <nav class="flex-grow-1 py-4">
                 <ul class="nav flex-column">
                     <li class="nav-item">
                         <a href="{{ route('admin.dashboard') }}"
                             class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                            <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                            <i class="bi bi-grid-1x2-fill"></i> Dashboard
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a href="{{ route('admin.products.index') }}"
                             class="nav-link {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
-                            <i class="bi bi-box-seam me-2"></i> Produk
+                            <i class="bi bi-cart-fill"></i> Manajemen Produk
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a href="{{ route('admin.categories.index') }}"
                             class="nav-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
-                            <i class="bi bi-folder me-2"></i> Kategori
+                            <i class="bi bi-tags-fill"></i> Kategori Koleksi
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a href="{{ route('admin.orders.index') }}"
                             class="nav-link d-flex align-items-center justify-content-between {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
-                            <span><i class="bi bi-receipt me-2"></i> Pesanan</span>
+                            <span><i class="bi bi-receipt-cutoff"></i> Daftar Pesanan</span>
                             @php
                                 $pendingCount = \App\Models\Order::where('status', 'pending')->count();
                             @endphp
                             @if ($pendingCount > 0)
-                                <span class="badge bg-warning text-dark">{{ $pendingCount }}</span>
+                                <span class="badge rounded-pill bg-danger shadow-sm">{{ $pendingCount }}</span>
                             @endif
-                        </a> {{-- FIX: Tag penutup link yang tadinya rusak --}}
-                    </li>
-
-                    <li class="nav-item">
-                        <a href="#" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                            <i class="bi bi-people me-2"></i> Pengguna
                         </a>
                     </li>
 
-                    {{-- Header Laporan dengan warna yang lebih kontras --}}
-                    <li class="nav-item mt-3">
+                    <li class="nav-item mt-4">
                         <span class="nav-link small text-uppercase fw-bold"
-                            style="color: rgba(255, 255, 255, 0.5); letter-spacing: 1px;">Laporan</span>
+                            style="color: var(--all-might-gold); opacity: 0.6; font-size: 0.7rem; letter-spacing: 2px;">
+                            Analysis & Reports
+                        </span>
                     </li>
 
                     <li class="nav-item">
-                        <a href="{{ route('admin.reports.sales') }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
-                            <i class="bi bi-graph-up me-2"></i> Laporan Penjualan
+                        <a href="{{ route('admin.reports.sales') }}" 
+                           class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
+                            <i class="bi bi-graph-up-arrow"></i> Laporan Penjualan
                         </a>
                     </li>
                 </ul>
             </nav>
-            {{-- User Info --}}
-            <div class="p-3 border-top border-secondary">
-                <div class="d-flex align-items-center text-white">
-                    <img src="{{ auth()->user()->avatar_url }}" class="rounded-circle me-2" width="36"
-                        height="36">
-                    <div class="flex-grow-1">
-                        <div class="small fw-medium">{{ auth()->user()->name }}</div>
-                        <div class="small text-muted">Administrator</div>
+
+            {{-- User Info Panel --}}
+            <div class="user-panel">
+                <div class="d-flex align-items-center">
+                    <div class="position-relative">
+                        <img src="{{ auth()->user()->avatar_url ?? 'https://ui-avatars.com/api/?name='.auth()->user()->name }}" 
+                             class="rounded-circle border border-2 border-warning" width="40" height="40">
+                        <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-light rounded-circle"></span>
+                    </div>
+                    <div class="ms-3 overflow-hidden">
+                        <div class="small fw-bold text-white text-truncate">{{ auth()->user()->name }}</div>
+                        <div class="small text-warning" style="font-size: 0.7rem;">Symbol of Admin</div>
                     </div>
                 </div>
             </div>
@@ -128,34 +209,47 @@
         {{-- Main Content --}}
         <div class="flex-grow-1">
             {{-- Top Bar --}}
-            <header class="bg-white shadow-sm py-3 px-4 d-flex justify-content-between align-items-center">
-                <h4 class="mb-0">@yield('page-title', 'Dashboard')</h4>
+            <header class="top-navbar py-3 px-4 d-flex justify-content-between align-items-center shadow-sm">
                 <div class="d-flex align-items-center">
-                    <a href="{{ route('home') }}" class="btn btn-outline-secondary btn-sm me-2" target="_blank">
-                        <i class="bi bi-box-arrow-up-right me-1"></i> Lihat Toko
+                    <i class="bi bi-list fs-4 me-3 d-md-none pointer"></i>
+                    <h5 class="page-title mb-0">@yield('page-title', 'Dashboard')</h5>
+                </div>
+                
+                <div class="d-flex align-items-center">
+                    <a href="{{ route('home') }}" class="btn btn-outline-primary btn-sm me-3" target="_blank">
+                        <i class="bi bi-globe2 me-1"></i> Visit Site
                     </a>
-                    <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                    
+                    <div class="vr me-3 opacity-25"></div>
+
+                    <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="btn btn-outline-danger btn-sm">
-                            <i class="bi bi-box-arrow-right me-1"></i> Logout
+                        <button type="submit" class="btn btn-all-might btn-sm px-3">
+                            <i class="bi bi-power me-1"></i> LOGOUT
                         </button>
                     </form>
                 </div>
             </header>
 
-            {{-- Flash Messages --}}
-            <div class="px-4 pt-3">
-                @include('partials.flash-messages')
-            </div>
+            {{-- Content Area --}}
+            <div class="p-4" style="background: #f4f7fa; min-height: calc(100vh - 75px);">
+                {{-- Breadcrumb (Optional) --}}
+                <nav aria-label="breadcrumb" class="mb-4">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#" class="text-decoration-none">Admin</a></li>
+                        <li class="breadcrumb-item active">@yield('page-title')</li>
+                    </ol>
+                </nav>
 
-            {{-- Page Content --}}
-            <main class="p-4">
+                {{-- Alert Messages --}}
+                @include('partials.flash-messages')
+
+                {{-- The Real Content --}}
                 @yield('content')
-            </main>
+            </div>
         </div>
     </div>
 
     @stack('scripts')
 </body>
-
 </html>

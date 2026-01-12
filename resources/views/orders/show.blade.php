@@ -1,122 +1,261 @@
+{{-- ================================================
+     FILE: resources/views/orders/show.blade.php
+     FUNGSI: Detail Pesanan (Comic Heroic Style)
+     ================================================ --}}
+
 @extends('layouts.app')
 
+@section('title', 'Detail Pesanan #' . $order->order_number)
+
 @section('content')
+<style>
+    /* Comic Invoice Style */
+    .comic-card-detail {
+        border: 4px solid #000 !important;
+        border-radius: 0px !important;
+        box-shadow: 15px 15px 0px rgba(0,0,0,0.1);
+        background-color: #fff;
+    }
+
+    .comic-header {
+        border-bottom: 4px solid #000;
+        background-color: #f8f9fa;
+    }
+
+    /* Badge Custom */
+    .badge-comic {
+        border: 2px solid #000;
+        border-radius: 0px;
+        font-weight: 900;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    /* Table Styling */
+    .table-comic thead {
+        background-color: #333;
+        color: #fff;
+    }
+    .table-comic th {
+        border: none !important;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+    }
+
+    /* Total Section */
+    .total-label {
+        font-weight: 900;
+        text-transform: uppercase;
+    }
+    .total-amount {
+        color: var(--primary-color) !important;
+        font-weight: 900;
+        font-size: 1.5rem;
+    }
+
+    /* Tombol Bayar Heroic */
+    .btn-hero-pay {
+        background-color: var(--primary-color) !important;
+        border: 3px solid #000 !important;
+        color: white !important;
+        border-radius: 0px !important;
+        font-weight: 900;
+        text-transform: uppercase;
+        padding: 15px;
+        transition: 0.2s;
+    }
+    .btn-hero-pay:hover:not(:disabled) {
+        background-color: #F57C00 !important;
+        transform: translate(-3px, -3px);
+        box-shadow: 7px 7px 0px #000;
+    }
+
+    .btn-back-comic {
+        border: 2px solid #000 !important;
+        border-radius: 0px !important;
+        font-weight: 700;
+    }
+</style>
+
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm border-0" style="border-radius: 15px;">
-                <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0 fw-bold text-dark">Detail Pesanan #{{ $order->order_number }}</h4>
-                    <span class="badge rounded-pill 
-                        @if($order->status == 'pending') bg-warning text-dark 
-                        @elseif($order->status == 'success' || $order->status == 'delivered') bg-success 
-                        @else bg-secondary @endif px-3 py-2">
-                        {{ strtoupper($order->status) }}
-                    </span>
+        <div class="col-md-10">
+            <div class="card comic-card-detail">
+                {{-- Header Detail --}}
+                <div class="card-header comic-header py-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-0 fw-black text-uppercase">Detail Pesanan</h4>
+                        <span class="badge bg-dark">#{{ $order->order_number }}</span>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        {{-- Badge Status Dinamis --}}
+                        @if($order->payment_status === 'paid')
+                            <span class="badge badge-comic bg-success px-3 py-2">LUNAS</span>
+                        @elseif($order->status === 'failed')
+                            <span class="badge badge-comic bg-danger px-3 py-2">GAGAL</span>
+                        @else
+                            <span class="badge badge-comic bg-warning text-dark px-3 py-2">
+                                {{ $order->payment_status ?? $order->status }}
+                            </span>
+                        @endif
+                        
+                        {{-- Badge Status Pengiriman --}}
+                        @if($order->payment_status === 'paid')
+                            <span class="badge badge-comic bg-info text-white px-3 py-2">
+                                {{ strtoupper($order->status) }}
+                            </span>
+                        @endif
+                    </div>
                 </div>
 
-                <div class="card-body p-4">
-                    <p class="text-muted small mb-4">Dipesan pada: {{ $order->created_at->format('d M Y, H:i') }}</p>
+                <div class="card-body p-4 p-md-5">
+                    {{-- Info Pembeli & Tanggal --}}
+                    <div class="row mb-5 pb-4 border-bottom border-2 border-dark" style="border-style: dashed !important;">
+                        <div class="col-sm-6">
+                            <h6 class="text-muted text-uppercase fw-bold mb-3 small">Dikirim Ke:</h6>
+                            <p class="mb-1 fw-black fs-5">{{ Auth::user()->name }}</p>
+                            <p class="mb-0 text-muted small">{{ Auth::user()->email }}</p>
+                            {{-- Tambahkan alamat jika ada di model Order --}}
+                            @if($order->address)
+                                <p class="mb-0 mt-2 small text-dark"><i class="bi bi-geo-alt-fill me-1"></i> {{ $order->address }}</p>
+                            @endif
+                        </div>
+                        <div class="col-sm-6 text-sm-end mt-4 mt-sm-0">
+                            <h6 class="text-muted text-uppercase fw-bold mb-3 small">Waktu Transaksi:</h6>
+                            <p class="mb-0 fw-bold">{{ $order->created_at->format('d F Y') }}</p>
+                            <p class="mb-0 text-muted small">{{ $order->created_at->format('H:i') }} WIB</p>
+                        </div>
+                    </div>
 
-                    <h6 class="fw-bold mb-3">Produk yang Dipesan</h6>
-                    <div class="table-responsive mb-4">
-                        <table class="table align-middle">
-                            <thead class="table-light">
+                    {{-- Tabel Produk --}}
+                    <div class="table-responsive mb-5">
+                        <table class="table table-comic align-middle">
+                            <thead>
                                 <tr>
-                                    <th>Produk</th>
-                                    <th class="text-center">Qty</th>
+                                    <th class="ps-3 py-3">Produk</th>
+                                    <th class="text-center">Jumlah</th>
                                     <th class="text-end">Harga</th>
-                                    <th class="text-end">Subtotal</th>
+                                    <th class="text-end pe-3">Subtotal</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($order->items as $item)
-                                <tr>
-                                    <td>
-                                        <span class="fw-medium">{{ $item->product_name }}</span>
+                                <tr class="border-bottom border-1">
+                                    <td class="py-4 ps-3">
+                                        <div class="fw-black text-dark">{{ $item->product_name }}</div>
                                     </td>
-                                    <td class="text-center">{{ $item->quantity }}</td>
-                                    {{-- Harga di sini otomatis harga saat beli (sudah diskon) --}}
-                                    <td class="text-end">Rp {{ number_format($item->price, 0, ',', '.') }}</td>
-                                    <td class="text-end fw-bold">Rp {{ number_format($item->price * $item->quantity, 0, ',', '.') }}</td>
+                                    <td class="py-4 text-center fw-bold">{{ $item->quantity }}</td>
+                                    <td class="py-4 text-end">
+                                        Rp {{ number_format($item->price, 0, ',', '.') }}
+                                    </td>
+                                    <td class="py-4 text-end pe-3 fw-black">
+                                        Rp {{ number_format($item->price * $item->quantity, 0, ',', '.') }}
+                                    </td>
                                 </tr>
                                 @endforeach
                             </tbody>
-                            <tfoot class="border-top-0">
-                                @if($order->shipping_cost > 0)
-                                <tr>
-                                    <td colspan="3" class="text-end text-muted">Ongkos Kirim:</td>
-                                    <td class="text-end">Rp {{ number_format($order->shipping_cost, 0, ',', '.') }}</td>
-                                </tr>
-                                @endif
-                                <tr class="fs-5">
-                                    <td colspan="3" class="text-end fw-bold">TOTAL BAYAR:</td>
-                                    <td class="text-end fw-bold text-primary">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
+                            <tfoot>
+                                <tr class="bg-light">
+                                    <th colspan="3" class="text-end py-4 total-label">Total Pembayaran</th>
+                                    <th class="text-end py-4 pe-3 total-amount">
+                                        Rp {{ number_format($order->total_amount, 0, ',', '.') }}
+                                    </th>
                                 </tr>
                             </tfoot>
                         </table>
                     </div>
 
-                    {{-- Alamat Pengiriman --}}
-                    <div class="bg-light p-3 rounded-3 mb-4 border-start border-primary border-4">
-                        <h6 class="fw-bold mb-2">Alamat Pengiriman</h6>
-                        <p class="mb-1 fw-semibold text-dark">{{ $order->shipping_name }}</p>
-                        <p class="mb-1 text-muted"><i class="bi bi-whatsapp me-2"></i>{{ $order->shipping_phone }}</p>
-                        <p class="mb-0 text-muted"><i class="bi bi-geo-alt me-2"></i>{{ $order->shipping_address }}</p>
-                    </div>
-
-                    {{-- Tombol Aksi --}}
-                    <div class="d-grid gap-2 text-center">
-                        @if($order->status === 'pending' && isset($snapToken))
-                            <div class="alert alert-warning border-0 small mb-3 shadow-sm">
-                                <i class="bi bi-info-circle me-2"></i>Silakan selesaikan pembayaran Anda melalui tombol di bawah ini.
-                            </div>
-                            <button id="pay-button" class="btn btn-primary btn-lg shadow-sm py-3 fw-bold" style="border-radius: 10px; background: linear-gradient(135deg, #4C80C0 0%, #4e98f4 100%); border:none;">
-                                💳 Bayar Sekarang
+                    {{-- Area Aksi / Tombol --}}
+                    @if($order->payment_status !== 'paid' && $order->status !== 'failed')
+                        <div class="text-center mb-4">
+                            <button id="pay-button" class="btn btn-hero-pay w-100 fs-5">
+                                <i class="bi bi-lightning-fill me-2"></i>
+                                <span id="button-text">Bayar Sekarang</span>
+                                <span id="button-loader" class="spinner-border spinner-border-sm d-none" role="status"></span>
                             </button>
-                        @endif
-                        <a href="{{ url('/') }}" class="btn btn-link text-decoration-none text-muted mt-2">
-                            &larr; Kembali ke Beranda
-                        </a>
-                    </div>
+                            <p class="mt-3 text-muted small">
+                                <i class="bi bi-shield-check me-1"></i> Pembayaran aman via Midtrans
+                            </p>
+                        </div>
+                    @else
+                        <div class="alert alert-success border-2 border-dark rounded-0 shadow-sm text-center py-4 mb-4">
+                            <h4 class="fw-black mb-2 text-uppercase">
+                                <i class="bi bi-check-circle-fill me-2"></i>Mission Accomplished!
+                            </h4>
+                            <p class="mb-0 fw-bold">Pembayaran Anda telah kami terima. Hero sedang menyiapkan pesanan Anda.</p>
+                        </div>
+                        <div class="d-grid">
+                            <a href="{{ route('orders.index') }}" class="btn btn-back-comic btn-dark py-3">
+                                <i class="bi bi-arrow-left me-2"></i>KEMBALI KE RIWAYAT PESANAN
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-{{-- Script Midtrans --}}
-@if(isset($snapToken) && $order->status === 'pending')
-    @push('scripts')
-        <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
-        <script type="text/javascript">
-            document.addEventListener('DOMContentLoaded', function() {
-                const payButton = document.getElementById('pay-button');
-                if (payButton) {
-                    payButton.addEventListener('click', function() {
-                        payButton.disabled = true;
-                        payButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Memproses...';
-
-                        window.snap.pay('{{ $snapToken }}', {
-                            onSuccess: function(result) {
-                                window.location.href = "{{ route('orders.show', $order) }}?status=success";
-                            },
-                            onPending: function(result) {
-                                window.location.href = "{{ route('orders.show', $order) }}?status=pending";
-                            },
-                            onError: function(result) {
-                                alert("Pembayaran gagal!");
-                                location.reload();
-                            },
-                            onClose: function() {
-                                payButton.disabled = false;
-                                payButton.innerHTML = '💳 Bayar Sekarang';
-                            }
-                        });
-                    });
-                }
-            });
-        </script>
-    @endpush
-@endif
 @endsection
+
+@push('scripts')
+@if($order->payment_status !== 'paid')
+<script 
+    src="https://app.sandbox.midtrans.com/snap/snap.js" 
+    data-client-key="{{ config('midtrans.client_key') }}">
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const payButton = document.getElementById('pay-button');
+    const btnText = document.getElementById('button-text');
+    const btnLoader = document.getElementById('button-loader');
+
+    if (!payButton) return;
+
+    payButton.addEventListener('click', function () {
+        payButton.disabled = true;
+        btnText.innerText = 'Menghubungkan ke Bank...';
+        btnLoader.classList.remove('d-none');
+
+        fetch('{{ route("payments.snap-token", $order->id) }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.token) {
+                window.snap.pay(data.token, {
+                    onSuccess: function (result) { location.reload(); },
+                    onPending: function (result) { location.reload(); },
+                    onError: function (result) {
+                        alert("Waduh, Pembayaran Gagal!");
+                        resetButton();
+                    },
+                    onClose: function () { resetButton(); }
+                });
+            } else {
+                alert('Waduh: ' + (data.error || 'Gagal mengambil token'));
+                resetButton();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Koneksi terputus, Twin!');
+            resetButton();
+        });
+    });
+
+    function resetButton() {
+        payButton.disabled = false;
+        btnText.innerText = 'Bayar Sekarang';
+        btnLoader.classList.add('d-none');
+    }
+});
+</script>
+@endif
+@endpush

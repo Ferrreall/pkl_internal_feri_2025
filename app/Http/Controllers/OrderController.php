@@ -4,65 +4,38 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use Illuminate\Http\Request;
-use Midtrans\Config; 
-use Midtrans\Snap;   
-use Midtrans\Transaction;
+use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
-    public function __construct()
-    {
-        Config::$serverKey = config('midtrans.server_key');
-        Config::$isProduction = config('midtrans.is_production');
-        Config::$isSanitized = config('midtrans.is_sanitized');
-        Config::$is3ds = config('midtrans.is_3ds');
-    }
-
+    /**
+     * Tampilkan semua daftar pesanan milik user yang sedang login
+     */
     public function index()
     {
-        $orders = auth()->user()->orders()->with(['items.product'])->latest()->paginate(10);
+        // Mengambil pesanan milik user, diurutkan dari yang terbaru
+        $orders = Order::where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return view('orders.index', compact('orders'));
     }
 
+    /**
+     * Tampilkan detail pesanan tunggal
+     */
     public function show(Order $order)
     {
-        if ($order->user_id !== auth()->id()) { abort(403); }
-
-        // SYNC STATUS MIDTRANS
-        if ($order->payment_status !== 'paid') {
-            try {
-                $status = Transaction::status($order->order_number); 
-                if ($status->transaction_status == 'settlement' || $status->transaction_status == 'capture') {
-                    $order->update(['payment_status' => 'paid', 'status' => 'processing']);
-                }
-            } catch (\Exception $e) {}
+        // 🔐 Security check: Pastikan user cuma bisa lihat pesanan dia sendiri
+        if ($order->user_id !== Auth::id()) {
+            abort(403);
         }
 
-        $order->load(['items.product']);
-        $snapToken = $order->snap_token;
+        // Refresh data biar statusnya paling update dari database
+        $order->refresh();
 
-        if ($order->status === 'pending' && !$snapToken) {
-            $params = [
-                'transaction_details' => [
-                    'order_id' => $order->order_number, 
-                    // total_amount di sini sudah harus hasil kalkulasi harga diskon
-                    'gross_amount' => (int) $order->total_amount, 
-                ],
-                'customer_details' => [
-                    'first_name' => auth()->user()->name,
-                    'email' => auth()->user()->email,
-                    'phone' => $order->shipping_phone,
-                ],
-            ];
-
-            try {
-                $snapToken = Snap::getSnapToken($params);
-                $order->update(['snap_token' => $snapToken]);
-            } catch (\Exception $e) {
-                \Log::error("Midtrans Error: " . $e->getMessage());
-            }
-        }
-
-        return view('orders.show', compact('order', 'snapToken'));
+        return view('orders.show', [
+            'order' => $order
+        ]);
     }
 }

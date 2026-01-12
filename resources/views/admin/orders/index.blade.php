@@ -57,16 +57,16 @@
                                 <td>
                                     {{-- Penyesuaian Badge sesuai Database --}}
                                     @if ($order->status == 'pending')
-                                        <span class="badge bg-warning text-dark">Pending</span>
+                                        <span class="">Pending</span>
                                     @elseif($order->status == 'shipped')
-                                        <span class="badge bg-info text-dark">Dikirim</span>
+                                        <span class="">Dikirim</span>
                                     @elseif($order->status == 'delivered')
-                                        <span class="badge bg-success">Selesai</span>
+                                        <span class="">Selesai</span>
                                     @elseif($order->status == 'cancelled')
-                                        <span class="badge bg-danger">Batal</span>
+                                        <span class="">Batal</span>
                                     @else
                                         {{-- Jika ada status baru (misal: 'refund'), akan muncul otomatis --}}
-                                        <span class="badge bg-secondary">{{ ucfirst($order->status) }}</span>
+                                        <span class="">{{ ucfirst($order->status) }}</span>
                                     @endif
                                 </td>
                                 <td class="text-end pe-4">

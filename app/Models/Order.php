@@ -19,6 +19,7 @@ class Order extends Model
         'shipping_address',
         'shipping_phone',
         'total_amount',
+        'midtrans_order_id', 
     ];
 
     // Relasi ke User (Opsional tapi berguna)

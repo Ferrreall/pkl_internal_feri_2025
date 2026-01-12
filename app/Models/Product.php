@@ -94,25 +94,19 @@ class Product extends Model
             && $this->discount_price < $this->price;
     }
 
-    // Tambahkan di dalam class Product
-public function getImageUrlAttribute(): string
-{
-    // Cari yang is_primary dulu
-    $image = $this->images->where('is_primary', true)->first();
-    
-    // Kalau tidak ada primary, ambil gambar apa saja yang pertama tersedia
-    if (!$image) {
-        $image = $this->images->first();
-    }
+    public function getImageUrlAttribute(): string
+    {
+        $image = $this->images->where('is_primary', true)->first();
+        if (!$image) {
+            $image = $this->images->first();
+        }
 
-    if ($image) {
-        // Jika di database image_path sudah ada kata 'products/', maka:
-        return asset('storage/' . $image->image_path);
-    }
+        if ($image) {
+            return asset('storage/' . $image->image_path);
+        }
 
-    // Jika benar-benar tidak ada gambar
-    return asset('img/no-image.png');
-}
+        return asset('img/no-image.png');
+    }
 
     public function getStockLabelAttribute(): string
     {
@@ -129,7 +123,17 @@ public function getImageUrlAttribute(): string
         return $this->weight . ' gram';
     }
 
-    // ==================== QUERY SCOPES (PENYEBAB ERROR) ====================
+    // ==================== QUERY SCOPES ====================
+
+    /**
+     * Scope Baru: Memfilter berdasarkan Kategori (Slug atau ID)
+     */
+    public function scopeByCategory($query, $category)
+    {
+        return $query->whereHas('category', function ($q) use ($category) {
+            $q->where('slug', $category)->orWhere('id', $category);
+        });
+    }
 
     public function scopeSearch($query, string $keyword)
     {

@@ -1,6 +1,6 @@
 {{-- ================================================
      FILE: resources/views/checkout/index.blade.php
-     FUNGSI: Halaman checkout (Fixed Discount Price)
+     FUNGSI: Halaman Checkout (Orange Heroic Theme)
      ================================================ --}}
 
 @extends('layouts.app')
@@ -8,79 +8,99 @@
 @section('title', 'Checkout')
 
 <style>
+    /* Paksa warna background container */
     .checkout-container {
-        background-color: #f8f9fa;
-        border-radius: 15px;
+        background-color: #ffffff;
     }
 
+    /* Comic Card Style - Konsisten dengan Cart */
     .card-checkout {
-        border: none;
-        border-radius: 12px;
-        transition: all 0.3s ease;
+        border: 3px solid #000 !important;
+        border-radius: 0px !important;
+        transition: all 0.2s ease;
     }
 
     .card-checkout:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(76, 128, 192, 0.1) !important;
+        transform: translate(-4px, -4px);
+        box-shadow: 8px 8px 0px rgba(0, 0, 0, 1) !important;
+    }
+
+    /* Input Focus ke Orange */
+    .form-control {
+        border: 2px solid #eee;
+        border-radius: 0px;
     }
 
     .form-control:focus {
-        border-color: #4C80C0;
-        box-shadow: 0 0 0 0.25rem rgba(76, 128, 192, 0.25);
+        border-color: var(--primary-color) !important;
+        box-shadow: 0 0 0 0.25rem rgba(255, 143, 0, 0.25) !important;
+        outline: none;
     }
 
+    /* Judul Section ala Komik */
     .section-title {
-        color: #4C80C0;
-        border-left: 4px solid #4C80C0;
+        color: #000;
+        border-left: 8px solid var(--primary-color);
         padding-left: 15px;
+        text-transform: uppercase;
+        font-weight: 900;
     }
 
+    /* Warna Harga Orange */
     .price-text {
-        color: #4C80C0;
-        font-weight: 700;
+        color: var(--primary-color) !important;
+        font-weight: 900;
     }
 
-    .btn-checkout {
-        background: linear-gradient(135deg, #4C80C0 0%, #4e98f4 100%);
-        border: none;
-        padding: 12px;
-        font-weight: 600;
-        transition: 0.3s;
+    /* Tombol Checkout Heroic */
+    .btn-checkout-hero {
+        background-color: var(--primary-color) !important;
+        border: 3px solid #000 !important;
+        color: white !important;
+        border-radius: 0px !important;
+        padding: 15px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: 0.2s;
     }
 
-    .btn-checkout:hover {
-        opacity: 0.9;
-        transform: scale(1.01);
+    .btn-checkout-hero:hover {
+        background-color: #F57C00 !important;
+        transform: translate(-2px, -2px);
+        box-shadow: 5px 5px 0px #000;
     }
 </style>
 
 @section('content')
     <div class="container py-5">
-        <h2 class="fw-bold mb-4 section-title">Checkout</h2>
+        <h2 class="mb-5 section-title">Proses Checkout</h2>
 
         <form action="{{ route('checkout.store') }}" method="POST">
             @csrf
-            <div class="row g-4">
+            <div class="row g-5">
                 {{-- Form Alamat --}}
                 <div class="col-lg-7">
                     <div class="card card-checkout shadow-sm">
                         <div class="card-body p-4">
-                            <h5 class="mb-4 fw-bold"><i class="bi bi-truck me-2"></i>Informasi Pengiriman</h5>
+                            <h5 class="mb-4 fw-bold text-uppercase">
+                                <i class="bi bi-truck me-2 text-warning"></i>Informasi Pengiriman
+                            </h5>
 
                             <div class="mb-3">
-                                <label class="form-label">Nama Lengkap Penerima</label>
-                                <input type="text" name="name" class="form-control" value="{{ auth()->user()->name }}"
+                                <label class="form-label fw-bold small text-uppercase">Nama Lengkap Penerima</label>
+                                <input type="text" name="name" class="form-control form-control-lg" value="{{ auth()->user()->name }}"
                                     required>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Nomor WhatsApp</label>
-                                <input type="text" name="phone" class="form-control" placeholder="0812xxxx" required>
+                                <label class="form-label fw-bold small text-uppercase">Nomor WhatsApp</label>
+                                <input type="text" name="phone" class="form-control form-control-lg" placeholder="0812xxxx" required>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Alamat Lengkap</label>
-                                <textarea name="address" class="form-control" rows="4" placeholder="Jl. Fontaine No. 1..." required></textarea>
+                                <label class="form-label fw-bold small text-uppercase">Alamat Lengkap</label>
+                                <textarea name="address" class="form-control form-control-lg" rows="4" placeholder="Sebutkan jalan, nomor rumah, dan patokan..." required></textarea>
                             </div>
                         </div>
                     </div>
@@ -88,51 +108,55 @@
 
                 {{-- Ringkasan Pesanan --}}
                 <div class="col-lg-5">
-                    <div class="card card-checkout shadow-sm border-0 bg-white">
+                    <div class="card card-checkout shadow-sm bg-white">
+                        <div class="card-header bg-dark text-white py-3">
+                            <h5 class="mb-0 fw-bold text-uppercase">Isi Tas Belanja</h5>
+                        </div>
                         <div class="card-body p-4">
-                            <h5 class="mb-4 fw-bold">Pesanan Kamu</h5>
-
                             @php $totalBayar = 0; @endphp
 
                             @foreach ($cart->items as $item)
                                 @php 
-                                    // FIX: Gunakan $item->price (harga diskon dari cart), bukan product->price
                                     $subtotalItem = $item->price * $item->quantity;
                                     $totalBayar += $subtotalItem;
                                 @endphp
-                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom border-dashed">
                                     <div class="d-flex align-items-center">
-                                        <img src="{{ $item->product->image_url }}" width="50" class="rounded me-2">
+                                        <img src="{{ $item->product->image_url }}" width="60" height="60" 
+                                             class="border border-2 border-dark me-3" style="object-fit: cover;">
                                         <div>
-                                            <p class="mb-0 fw-bold small">{{ Str::limit($item->product->name, 25) }}</p>
-                                            <small class="text-muted">{{ $item->quantity }}x @ Rp {{ number_format($item->price, 0, ',', '.') }}</small>
+                                            <p class="mb-0 fw-bold small text-dark">{{ Str::limit($item->product->name, 25) }}</p>
+                                            <small class="fw-bold text-muted">{{ $item->quantity }} x Rp {{ number_format($item->price, 0, ',', '.') }}</small>
                                         </div>
                                     </div>
-                                    <span class="small fw-bold">Rp {{ number_format($subtotalItem, 0, ',', '.') }}</span>
+                                    <span class="fw-bold text-dark">Rp {{ number_format($subtotalItem, 0, ',', '.') }}</span>
                                 </div>
                             @endforeach
 
-                            <hr class="my-4">
+                            <div class="mt-4">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted fw-bold small text-uppercase">Subtotal</span>
+                                    <span class="fw-bold">Rp {{ number_format($totalBayar, 0, ',', '.') }}</span>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mb-4 pt-2 border-top border-2 border-dark">
+                                    <span class="fw-black fs-5 text-uppercase">Total Bayar</span>
+                                    <span class="fs-4 price-text">
+                                        Rp {{ number_format($totalBayar, 0, ',', '.') }}
+                                    </span>
+                                </div>
 
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>Subtotal</span>
-                                <span>Rp {{ number_format($totalBayar, 0, ',', '.') }}</span>
+                                <button type="submit" class="btn btn-checkout-hero w-100 mb-3">
+                                    <i class="bi bi-shield-lock-fill me-2"></i>Selesaikan Pesanan
+                                </button>
+
+                                <div class="p-3 bg-light text-center" style="border: 2px dashed #ccc;">
+                                    <p class="text-muted small mb-0 fw-bold">
+                                        <i class="bi bi-patch-check-fill text-success me-1"></i> 
+                                        TRANSAKSI AMAN & TERPROTEKSI
+                                    </p>
+                                </div>
                             </div>
-                            
-                            <div class="d-flex justify-content-between mb-4">
-                                <span class="fw-bold fs-5">Total Pembayaran</span>
-                                <span class="fs-5 price-text">
-                                    Rp {{ number_format($totalBayar, 0, ',', '.') }}
-                                </span>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary btn-checkout w-100 mb-3 text-white">
-                                <i class="bi bi-lock-fill me-2"></i>Buat Pesanan Sekarang
-                            </button>
-
-                            <p class="text-center text-muted small">
-                                <i class="bi bi-shield-check me-1"></i> Pembayaran Aman & Terenkripsi
-                            </p>
                         </div>
                     </div>
                 </div>

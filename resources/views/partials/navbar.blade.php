@@ -6,11 +6,11 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
     <div class="container">
         {{-- Logo & Brand --}}
-        <a class="navbar-brand brand-color" href="{{ route('home') }}">
-            <i class="bi bi-hurricane"></i>
-            TokoOnline
+        <a class="navbar-brand brand-color d-flex align-items-center" href="{{ route('home') }}">
+            <img src="{{ asset('images/almait.png') }}" alt="Logo All Might" height="65"
+                class="me-2 logo-pensil">
+            <span class="fw-bold">AlatKu</span>
         </a>
-
         {{-- Mobile Toggle --}}
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
             <span class="navbar-toggler-icon"></span>

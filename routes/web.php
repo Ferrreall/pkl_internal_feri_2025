@@ -21,13 +21,13 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 
 // ================================================
-// MIDTRANS WEBHOOK (Taruh di paling atas agar aman)
+// MIDTRANS WEBHOOK (Tanpa CSRF, Tanpa Auth)
 // ================================================
 Route::post('/midtrans/notification', [MidtransNotificationController::class, 'handle'])
     ->name('midtrans.notification');
 
 // ================================================
-// HALAMAN PUBLIK (Tanpa Login)
+// HALAMAN PUBLIK
 // ================================================
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/catalog', [CatalogController::class, 'index'])->name('catalog.index');
@@ -41,9 +41,9 @@ Route::get('/auth/google/callback', [GoogleController::class, 'handleGoogleCallb
 // HALAMAN CUSTOMER (Wajib Login)
 // ================================================
 Route::middleware('auth')->group(function () {
+    
     // Keranjang Belanja
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-    // ... route cart lainnya ...
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
     Route::patch('/cart/{item}', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/cart/{item}', [CartController::class, 'remove'])->name('cart.remove');
@@ -60,9 +60,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 
-    // Pembayaran
-    Route::get('/orders/{order}/snap-token', [PaymentController::class, 'getSnapToken'])->name('orders.pay.token');
-    Route::get('/orders/{order}/pay', [PaymentController::class, 'show'])->name('orders.pay');
+    // PEMBAYARAN (FIXED: Sesuai dengan Blade kamu)
+    Route::post('/payments/snap-token/{order}', [PaymentController::class, 'getSnapToken'])
+        ->name('payments.snap-token');
+    
+    // Route tambahan (opsional jika masih butuh)
     Route::get('/orders/{order}/success', [PaymentController::class, 'success'])->name('orders.success');
     Route::get('/orders/{order}/pending', [PaymentController::class, 'pending'])->name('orders.pending');
 
@@ -76,19 +78,17 @@ Route::middleware('auth')->group(function () {
 });
 
 // ================================================
-// HALAMAN ADMIN (Auth + Role Admin)
+// HALAMAN ADMIN
 // ================================================
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-    
-    // Kembalikan ke standar (Hapus .restore dan .withTrashed jika ingin benar-benar hilang)
     Route::resource('products', AdminProductController::class);
+    Route::resource('categories', AdminCategoryController::class)->except(['show']);
     
-    Route::resource('categories', AdminCategoryController::class)->except(['show']);
-    Route::resource('categories', AdminCategoryController::class)->except(['show']);
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
     Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
+    
     Route::get('/reports/sales', [ReportController::class, 'sales'])->name('reports.sales');
     Route::get('/reports/sales/export', [ReportController::class, 'exportSales'])->name('reports.export-sales');
 });

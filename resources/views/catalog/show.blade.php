@@ -1,3 +1,8 @@
+{{-- ================================================
+     FILE: resources/views/catalog/show.blade.php
+     FUNGSI: Detail Produk (Orange Comic Theme)
+     ================================================ --}}
+
 @extends('layouts.app')
 
 @section('title', $product->name)
@@ -6,30 +11,28 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
 <style>
-    /* 1. Perbaikan Breadcrumb sesuai request */
+    /* 1. Breadcrumb Fix - No Blue */
     .breadcrumb-item a {
-        color: #6c757d !important; 
+        color: var(--text-muted) !important; 
         text-decoration: none;
-        transition: color 0.2s;
-    }
-    .breadcrumb-item a:hover {
-        color: #000 !important;
-    }
-    .breadcrumb-item.active {
-        color: #000 !important;
         font-weight: 600;
     }
-    .breadcrumb-divider {
-        color: #6c757d;
+    .breadcrumb-item a:hover {
+        color: var(--primary-color) !important;
+    }
+    .breadcrumb-item.active {
+        color: var(--comic-black) !important;
+        font-weight: 800;
     }
 
-    /* 2. Styling Slider */
+    /* 2. Slider Comic Style */
     .main-slider {
         height: 450px;
         background: #fff;
-        border-radius: 15px;
+        border-radius: 0px; /* Kaku ala komik */
         overflow: hidden;
-        border: 1px solid #f0f0f0;
+        border: 3px solid var(--comic-black);
+        box-shadow: 8px 8px 0px rgba(0,0,0,0.1);
     }
     .main-slider img {
         width: 100%;
@@ -37,78 +40,83 @@
         object-fit: contain;
         padding: 20px;
     }
-    .thumb-slider {
-        height: 90px;
-        margin-top: 15px;
-    }
-    .thumb-slider .swiper-slide {
-        width: 20%;
-        height: 100%;
-        opacity: 0.5;
-        cursor: pointer;
-        transition: opacity 0.3s;
-    }
-    .thumb-slider .swiper-slide-thumb-active { opacity: 1; }
-    .thumb-slider img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 10px;
-        border: 2px solid transparent;
-    }
-    .thumb-slider .swiper-slide-thumb-active img { border-color: #4C80C0; }
 
-    /* Custom Arrow Swiper */
-    .swiper-button-next, .swiper-button-prev {
-        color: #000 !important;
-        background: rgba(255,255,255,0.8);
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    /* Thumbnail Border Orange */
+    .thumb-slider .swiper-slide-thumb-active img { 
+        border-color: var(--primary-color) !important; 
+        border-width: 3px;
     }
-    
-    .swiper-button-next::after, .swiper-button-prev::after {
-        font-size: 18px;
-        font-weight: bold;
+
+    /* 3. Text & Price Styling (Sikat si Biru) */
+    .price-tag {
+        color: var(--primary-color) !important; /* Paksa Orange */
+        font-weight: 900;
+        letter-spacing: -1px;
+    }
+
+    /* Button Custom */
+    .btn-heroic-lg {
+        background-color: var(--primary-color);
+        color: white;
+        border: 3px solid var(--comic-black);
+        border-radius: 15px;
+        font-weight: 900;
+        text-transform: uppercase;
+        box-shadow: 5px 5px 0px var(--comic-black);
+        transition: 0.2s;
+    }
+    .btn-heroic-lg:hover:not(:disabled) {
+    background-color: #F57C00;
+    transform: translate(-2px, -2px);
+    box-shadow: 8px 8px 0px var(--comic-black);
+    color: white;
+    border-radius: 15px;
+    /* Ganti stroke jadi border */
+    border: 3px solid var(--comic-black); 
+}
+
+    /* Input Quantity */
+    .qty-input-group {
+        border: 3px solid var(--comic-black);
+    }
+    .qty-input-group input {
+        border: none !important;
+        font-weight: 800;
+    }
+    .qty-input-group button {
+        background: #eee;
+        border: none;
+        font-weight: 900;
     }
 </style>
 
 <div class="container py-4">
-    {{-- Breadcrumb Modern --}}
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb bg-transparent p-0">
             <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
             <li class="breadcrumb-item"><a href="{{ route('catalog.index') }}">Katalog</a></li>
-            <li class="breadcrumb-item">
-                <a href="{{ route('catalog.index', ['category' => $product->category->slug]) }}">
-                    {{ $product->category->name }}
-                </a>
-            </li>
             <li class="breadcrumb-item active" aria-current="page">{{ $product->name }}</li>
         </ol>
     </nav>
 
     <div class="row g-5">
-        {{-- Left Side: Product Images --}}
+        {{-- Left Side: Images --}}
         <div class="col-lg-6">
-            <div class="swiper main-slider shadow-sm">
+            <div class="swiper main-slider mb-3">
                 <div class="swiper-wrapper">
                     @foreach($product->images as $image)
-                        <div class="swiper-slide">
+                        <div class="swiper-slide text-center">
                             <img src="{{ asset('storage/' . $image->image_path) }}" alt="{{ $product->name }}">
                         </div>
                     @endforeach
                 </div>
-                
                 @if($product->has_discount)
                     <div class="position-absolute top-0 start-0 m-3 z-3">
-                        <span class="badge bg-danger px-3 py-2 rounded-3 shadow-sm">
+                        <span class="badge bg-danger px-3 py-2 fw-bold" style="border-radius: 0; border: 2px solid black;">
                             -{{ $product->discount_percentage }}%
                         </span>
                     </div>
                 @endif
-                
                 <div class="swiper-button-next"></div>
                 <div class="swiper-button-prev"></div>
             </div>
@@ -117,8 +125,8 @@
                 <div class="swiper thumb-slider">
                     <div class="swiper-wrapper">
                         @foreach($product->images as $image)
-                            <div class="swiper-slide">
-                                <img src="{{ asset('storage/' . $image->image_path) }}">
+                            <div class="swiper-slide" style="cursor: pointer;">
+                                <img src="{{ asset('storage/' . $image->image_path) }}" class="img-fluid border" style="height: 80px; width: 100%; object-fit: cover;">
                             </div>
                         @endforeach
                     </div>
@@ -126,14 +134,14 @@
             @endif
         </div>
 
-        {{-- Right Side: Product Details --}}
+        {{-- Right Side: Details --}}
         <div class="col-lg-6">
             <div class="ps-lg-3">
-                <span class="badge bg-secondary bg-opacity-10 text-dark mb-2 px-3 py-2 rounded-pill fw-medium">
+                <span class="badge mb-2 px-3 py-2 text-dark text-uppercase fw-bold" style="background-color: var(--secondary-color); border: 2px solid black;">
                     {{ $product->category->name }}
                 </span>
                 
-                <h1 class="display-6 fw-bold mb-3 text-dark">{{ $product->name }}</h1>
+                <h1 class="display-5 fw-black mb-3 text-dark text-uppercase" style="font-weight: 900;">{{ $product->name }}</h1>
 
                 <div class="mb-4">
                     @if($product->has_discount)
@@ -141,19 +149,20 @@
                             {{ $product->formatted_original_price }}
                         </span>
                     @endif
-                    <span class="h2 fw-bold text-primary mb-0 d-block d-sm-inline">
+                    {{-- GANTI DISINI: Class price-tag buatan sendiri biar gak biru --}}
+                    <span class="h1 price-tag mb-0 d-block d-sm-inline">
                         {{ $product->formatted_price }}
                     </span>
                 </div>
 
                 <div class="mb-4">
                     @if($product->stock > 0)
-                        <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">
-                            <i class="bi bi-check-circle-fill me-1"></i> Stok Tersedia
+                        <span class="fw-bold text-success text-uppercase">
+                            <i class="bi bi-check-square-fill me-1"></i> Stok Siap Tempur
                         </span>
                     @else
-                        <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">
-                            <i class="bi bi-x-circle-fill me-1"></i> Stok Habis
+                        <span class="fw-bold text-danger text-uppercase">
+                            <i class="bi bi-x-square-fill me-1"></i> Stok Habis Total
                         </span>
                     @endif
                 </div>
@@ -163,36 +172,29 @@
                     <input type="hidden" name="product_id" value="{{ $product->id }}">
                     
                     <div class="d-flex flex-wrap gap-3 align-items-center">
-                        <div class="input-group shadow-sm" style="width: 130px; height: 50px;">
-                            <button class="btn btn-outline-light border text-dark fw-bold" type="button" onclick="decrementQty()">-</button>
-                            <input type="number" name="quantity" id="quantity" class="form-control text-center border-start-0 border-end-0 fw-bold" value="1" min="1" max="{{ $product->stock }}">
-                            <button class="btn btn-outline-light border text-dark fw-bold" type="button" onclick="incrementQty()">+</button>
+                        <div class="input-group qty-input-group shadow-sm" style="width: 140px; height: 55px;">
+                            <button class="btn btn-light fw-bold" type="button" onclick="decrementQty()">-</button>
+                            <input type="number" name="quantity" id="quantity" class="form-control text-center fw-bold fs-5" value="1" min="1" max="{{ $product->stock }}">
+                            <button class="btn btn-light fw-bold" type="button" onclick="incrementQty()">+</button>
                         </div>
                         
-                        <button type="submit" class="btn btn-primary btn-lg flex-grow-1 fw-bold shadow-sm rounded-3" style="height: 50px;" {{ $product->stock == 0 ? 'disabled' : '' }}>
-                            <i class="bi bi-cart-plus me-2"></i> Tambah ke Keranjang
+                        <button type="submit" class="btn btn-heroic-lg flex-grow-1 shadow-sm" style="height: 55px;" {{ $product->stock == 0 ? 'disabled' : '' }}>
+                            <i class="bi bi-cart-plus-fill me-2"></i> Tambah ke Keranjang
                         </button>
                     </div>
                 </form>
 
-                @auth
-                    <button class="btn btn-outline-danger w-100 rounded-3 py-2 mb-4 transition" onclick="toggleWishlist({{ $product->id }})">
-                        <i class="bi {{ auth()->user()->hasInWishlist($product) ? 'bi-heart-fill' : 'bi-heart' }} me-2"></i>
-                        {{ auth()->user()->hasInWishlist($product) ? 'Hapus dari Wishlist' : 'Tambah ke Favorit' }}
-                    </button>
-                @endauth
-
-                <div class="bg-light p-4 rounded-4">
-                    <h5 class="fw-bold mb-3 text-dark">Deskripsi Produk</h5>
-                    <div class="text-muted small lh-lg">
+                <div class="mt-5 p-4 bg-white border-top border-3 border-dark" style="background-image: linear-gradient(45deg, #f9f9f9 25%, transparent 25%); background-size: 4px 4px;">
+                    <h5 class="fw-bold mb-3 text-uppercase">Deskripsi Produk</h5>
+                    <div class="text-muted lh-lg">
                         {!! nl2br(e($product->description)) !!}
                     </div>
-                    <div class="row mt-4 pt-3 border-top border-2 border-white">
-                        <div class="col-6 small">
-                            <i class="bi bi-box-seam text-primary me-2"></i> Berat: {{ $product->weight }} gr
+                    <div class="row mt-4 pt-3 border-top border-2 border-dark border-dashed">
+                        <div class="col-6 fw-bold small text-uppercase">
+                            <i class="bi bi-box-seam me-2"></i> Berat: {{ $product->weight }} gr
                         </div>
-                        <div class="col-6 small text-end">
-                            <i class="bi bi-qr-code text-primary me-2"></i> SKU: PROD-{{ $product->id }}
+                        <div class="col-6 fw-bold small text-end text-uppercase">
+                            <i class="bi bi-qr-code me-2"></i> SKU: P-{{ $product->id }}
                         </div>
                     </div>
                 </div>
@@ -205,22 +207,14 @@
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
     const swiperThumbs = new Swiper(".thumb-slider", {
-        spaceBetween: 12,
+        spaceBetween: 10,
         slidesPerView: 4,
-        freeMode: true,
         watchSlidesProgress: true,
     });
 
     const swiperMain = new Swiper(".main-slider", {
-        spaceBetween: 10,
-        grabCursor: true,
-        navigation: {
-            nextEl: ".swiper-button-next",
-            prevEl: ".swiper-button-prev",
-        },
-        thumbs: {
-            swiper: swiperThumbs,
-        },
+        navigation: { nextEl: ".swiper-button-next", prevEl: ".swiper-button-prev" },
+        thumbs: { swiper: swiperThumbs },
     });
 
     function incrementQty() {
