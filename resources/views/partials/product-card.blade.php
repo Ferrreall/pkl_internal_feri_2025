@@ -12,9 +12,10 @@
             </a>
 
             {{-- Badge Diskon --}}
+            {{-- Badge Diskon --}}
             @if ($product->has_discount)
                 <span class="badge-discount">
-                    -{{ $product->discount_percentage }}%
+                    -{{ $product->discount_percentage }}% {{-- Sekarang ini bakal ada isinya (misal: -15%) --}}
                 </span>
             @endif
 

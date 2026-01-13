@@ -19,7 +19,7 @@
                     </h1>
                     <p class="lead mb-4 hero-text-sub">
                         Temukan berbagai produk berkualitas dengan harga terbaik. 
-                        Gratis ongkir untuk pahlawan belanja seperti kamu!
+                        Alatku memenuhi kebutuhanmu!
                     </p>
                     <div class="d-flex gap-3">
                         <a href="{{ route('catalog.index') }}" class="btn btn-primary btn-lg">
@@ -64,7 +64,7 @@
     {{-- Kategori --}}
     <section class="py-5">
         <div class="container">
-            <h2 class="text-center mb-4 fw-bold">Kategori Populer</h2>
+            <h2 class="text-center mb-4 fw-bold">Kategori</h2>
             <div class="row g-4">
                 @foreach($categories as $category)
                     <div class="col-6 col-md-4 col-lg-2">

@@ -34,6 +34,7 @@
        - Auto-translate browser --}}
 
 <head>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <meta name="referrer" content="no-referrer">
     <meta charset="UTF-8">
     {{-- ↑ Encoding karakter UTF-8
@@ -245,6 +246,25 @@
       // Bootstrap badge display toggle logic
       badge.style.display = count > 0 ? "inline-block" : "none";
     }
+
+    function showToast(message, icon = "success") {
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+    });
+
+    Toast.fire({
+        icon: icon,
+        title: message
+    });
+}
   }
 </script>
 </body>

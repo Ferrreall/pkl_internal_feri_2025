@@ -7,8 +7,7 @@
     <div class="container">
         {{-- Logo & Brand --}}
         <a class="navbar-brand brand-color d-flex align-items-center" href="{{ route('home') }}">
-            <img src="{{ asset('images/almait.png') }}" alt="Logo All Might" height="65"
-                class="me-2 logo-pensil">
+            <img src="{{ asset('images/almait.png') }}" alt="Logo All Might" height="65" class="me-2 logo-pensil">
             <span class="fw-bold">AlatKu</span>
         </a>
         {{-- Mobile Toggle --}}
@@ -41,16 +40,15 @@
 
                 @auth
                     {{-- Wishlist --}}
+                    {{-- Wishlist --}}
                     <li class="nav-item">
                         <a class="nav-link position-relative" href="{{ route('wishlist.index') }}">
                             <i class="bi bi-heart"></i>
-                            @if (auth()->user()->wishlists()->count() > 0)
-                                <span
-                                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                                    style="font-size: 0.6rem;">
-                                    {{ auth()->user()->wishlists()->count() }}
-                                </span>
-                            @endif
+                            <span id="wishlist-count"
+                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                style="font-size: 0.6rem; {{ auth()->check() && auth()->user()->wishlists()->count() > 0 ? '' : 'display: none;' }}">
+                                {{ auth()->check() ? auth()->user()->wishlists()->count() : 0 }}
+                            </span>
                         </a>
                     </li>
 

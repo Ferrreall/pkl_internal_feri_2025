@@ -89,10 +89,20 @@ class Product extends Model
 
     public function getHasDiscountAttribute(): bool
     {
-        return $this->discount_price !== null 
-            && $this->discount_price > 0 
+        return $this->discount_price !== null
+            && $this->discount_price > 0
             && $this->discount_price < $this->price;
     }
+
+   
+public function getDiscountPercentageAttribute(): int
+{
+    if ($this->has_discount) {
+        $percentage = (($this->price - $this->discount_price) / $this->price) * 100;
+        return (int) round($percentage);
+    }
+    return 0;
+}
 
     public function getImageUrlAttribute(): string
     {
@@ -139,23 +149,23 @@ class Product extends Model
     {
         return $query->where(function ($q) use ($keyword) {
             $q->where('name', 'like', "%{$keyword}%")
-              ->orWhere('description', 'like', "%{$keyword}%");
+                ->orWhere('description', 'like', "%{$keyword}%");
         });
     }
 
-    public function scopeActive($query) 
-    { 
-        return $query->where('is_active', true); 
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
 
-    public function scopeFeatured($query) 
-    { 
-        return $query->where('is_featured', true); 
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true);
     }
 
-    public function scopeInStock($query) 
-    { 
-        return $query->where('stock', '>', 0); 
+    public function scopeInStock($query)
+    {
+        return $query->where('stock', '>', 0);
     }
 
     public function scopeAvailable($query)
@@ -166,7 +176,7 @@ class Product extends Model
     public function scopeOnSale($query)
     {
         return $query->whereNotNull('discount_price')
-                     ->whereColumn('discount_price', '<', 'price');
+            ->whereColumn('discount_price', '<', 'price');
     }
 
     public function scopeSortBy($query, ?string $sort)
@@ -194,5 +204,17 @@ class Product extends Model
     public function incrementStock(int $quantity): void
     {
         $this->increment('stock', $quantity);
+    }
+
+    // Tambahkan di dalam class Product
+    public function isWishlisted()
+    {
+        // Cek apakah user sudah login
+        if (!auth()->check()) {
+            return false;
+        }
+
+        // Cek apakah user yang login punya produk ini di wishlist-nya
+        return auth()->user()->wishlists()->where('product_id', $this->id)->exists();
     }
 }
